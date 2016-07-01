@@ -32,26 +32,13 @@ public class MainMenu : MonoBehaviour {
 	}
 
     /*
-    * Metodo para prender el el menu de ayuda en la pantalla de inicio
-    */
-    public void helpButtonPress()
-    {
-
-    }
-    /*
     * Metodo para prender el el menu HUD en la pantalla
     */
     public void deactivateMainCanvas()
     {
-        mainCanvas.enabled = false;
+        mainCanvas.enabled = false; 
     }
-    /* 
-    * Metodo para abrir el score
-    */
-    public void scorePress()
-    {
 
-    }
     /* 
     * Metodo para prender o apagar el audio del juego
     */
@@ -66,14 +53,7 @@ public class MainMenu : MonoBehaviour {
     {
         music.enabled = true;
     }
-    /*
-    * Metodo para mostrar los creditos del juego 
-    */
-    public void creditsPress()
-    {
 
-    }
-    
     /*
     * *****METODO PARA DESACTIVAR TODOS LOS BOTONES DEL CANVAS*****
     */
@@ -95,32 +75,5 @@ public class MainMenu : MonoBehaviour {
         scoreButton.enabled = false;
         audioButton.enabled = false;
         creditsButton.enabled = false;
-    }
-    /* 
-    * *****FUNCIONES GET DE CADA ATRIBUTO*****
-    */
-    public Button getPlayButton()
-    {
-        return playButton;
-    }
-
-    public Button getHelpButton()
-    {
-        return helpButton;
-    }
-
-    public Button getScoreButton()
-    {
-        return scoreButton;
-    }
-
-    public Button getAudioButton()
-    {
-        return audioButton;
-    }
-
-    public Button getCreditsButton()
-    {
-        return creditsButton;
     }
 }
