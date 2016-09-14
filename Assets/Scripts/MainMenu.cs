@@ -18,9 +18,10 @@ public class MainMenu : MonoBehaviour {
     void Start () {
         /* Inicialización del menu de ayuda y boton de ayuda
         */
-        helpButton = helpButton.GetComponent<Button>();
-        audioButton = audioButton.GetComponent<Button>();
         playButton = playButton.GetComponent<Button>();
+        helpButton = helpButton.GetComponent<Button>();
+        scoreButton = scoreButton.GetComponent<Button>();
+        audioButton = audioButton.GetComponent<Button>();
         creditsButton = creditsButton.GetComponent<Button>();
 
         mainCanvas = mainCanvas.GetComponent<Canvas>();
@@ -42,16 +43,16 @@ public class MainMenu : MonoBehaviour {
     /* 
     * Metodo para prender o apagar el audio del juego
     */
-    public void deactivateMusic()
+    public void audioEnabled()
     {
-        music.enabled = false;
-    }
-    /* 
-    * Metodo para prender musica
-    */
-    public void activateMusic()
-    {
-        music.enabled = true;
+        if (music.enabled)
+        {
+            music.enabled = false;
+        }
+        else
+        {
+            music.enabled = true;
+        }
     }
 
     /*
@@ -75,5 +76,13 @@ public class MainMenu : MonoBehaviour {
         scoreButton.enabled = false;
         audioButton.enabled = false;
         creditsButton.enabled = false;
+    }
+
+    public void startCredits()
+    {
+        //UnityEngine.SceneManagement.LoadSceneMode mode;
+        UnityEngine.SceneManagement.SceneManager.LoadScene(1, UnityEngine.SceneManagement.LoadSceneMode.Single);
+        //Application.LoadLevel (1); obsolete
+
     }
 }
