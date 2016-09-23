@@ -3,40 +3,49 @@ using System.Collections;
 using UnityEngine.UI;
 
 public class HelpMenu : MonoBehaviour {
-    MainMenu mainMenu = new MainMenu();
 
-    Button closeButton;
-    Button fogButton;
-    Button backButton;
-    Button nextButton;
+    public Button nextButton;
+    public Button backButton;
 
-    public Canvas helpMenu;
+    public Image imageNorm;
+    public Image imageInv;
+    public Image imageMult;
 
-    Image bombaNorm;
-    Image bombaInv;
-    Image bombaMult;
-    
-	// Use this for initialization
-	void Start () {
-        helpMenu.enabled = false;
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	
-	}
-    /*
-    * Metodo para cerrar el menu de ayuda y reactivacion del menu principal
-  
-    public void closeButtonPress()
+    public void NextImage()
     {
-        helpMenu.enabled = false;
-        helpButton.enabled = true;
-        audioButton.enabled = true;
-        playButton.enabled = true;
-        creditsButton.enabled = true;
-        fogImage.enabled = false;
-        fogButton.enabled = false;
+        if (imageNorm.enabled == true)
+        {
+            imageInv.enabled = true;
+            imageNorm.enabled = false;
+            backButton.GetComponent<Image>().enabled = true;
+        }
+        else
+        {
+            if (imageInv.enabled)
+            {
+                imageMult.enabled = true;
+                imageInv.enabled = false;
+                nextButton.GetComponent<Image>().enabled = false;
+            }
+        }
     }
-      */
+
+    public void BackImage()
+    {
+        if (imageInv.enabled)
+        {
+            imageNorm.enabled = true;
+            imageInv.enabled = false;
+            backButton.GetComponent<Image>().enabled = false;
+        }else
+        {
+            if (imageMult.enabled)
+            {
+                imageInv.enabled = true;
+                imageMult.enabled = false;
+                nextButton.GetComponent<Image>().enabled = true;
+            }
+        }
+    }
+
 }
