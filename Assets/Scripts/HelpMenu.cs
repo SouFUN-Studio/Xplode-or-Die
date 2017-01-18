@@ -7,24 +7,24 @@ public class HelpMenu : MonoBehaviour {
     public Button nextButton;
     public Button backButton;
 
-    public Image imageNorm;
-    public Image imageInv;
-    public Image imageMult;
+    public GameObject imageNorm;
+    public GameObject imageInv;
+    public GameObject imageMult;
 
     public void NextImage()
     {
-        if (imageNorm.enabled == true)
+        if (imageNorm.activeSelf)
         {
-            imageInv.enabled = true;
-            imageNorm.enabled = false;
+            imageInv.SetActive(true);
+            imageNorm.SetActive(false);
             backButton.GetComponent<Image>().enabled = true;
         }
         else
         {
-            if (imageInv.enabled)
+            if (imageInv.activeSelf)
             {
-                imageMult.enabled = true;
-                imageInv.enabled = false;
+                imageMult.SetActive(true);
+                imageInv.SetActive(false);
                 nextButton.GetComponent<Image>().enabled = false;
             }
         }
@@ -32,20 +32,19 @@ public class HelpMenu : MonoBehaviour {
 
     public void BackImage()
     {
-        if (imageInv.enabled)
+        if (imageInv.activeSelf)
         {
-            imageNorm.enabled = true;
-            imageInv.enabled = false;
+            imageNorm.SetActive(true);
+            imageInv.SetActive(false);
             backButton.GetComponent<Image>().enabled = false;
         }else
         {
-            if (imageMult.enabled)
+            if (imageMult.activeSelf)
             {
-                imageInv.enabled = true;
-                imageMult.enabled = false;
+                imageInv.SetActive(true);
+                imageMult.SetActive(false);
                 nextButton.GetComponent<Image>().enabled = true;
             }
         }
     }
-
 }
