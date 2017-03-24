@@ -5,10 +5,10 @@ using UnityEngine;
 public class ResizeSpriteToScreen : MonoBehaviour {
     private void Start()
     {
-        Resize();
+        ResizeImg();
     }
 
-    void Resize()
+    void ResizeImg()
     {
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
         if (sr == null) return;
@@ -30,6 +30,10 @@ public class ResizeSpriteToScreen : MonoBehaviour {
         yHeight.y = worldScreenHeight / height;
         transform.localScale = yHeight;
         //transform.localScale.y = worldScreenHeight / height;
+
+    }
+    void ResizeBoxCollider()
+    {
 
     }
 }

@@ -1,39 +1,41 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+
 public class GameController : MonoBehaviour {
 
-    public GameObject bombN;
-    public int bombNCount;
-    public float spawnWait;
-    public float startWait;
-    public float waveWait;
-    public Vector2 spawnValues;
-
-    // Use this for initialization
-    void Start () {
-       
+	public GameObject hazzard0;
+	public GameObject hazzard1;
+    public GameObject hazzard2;
+	public Vector3 spawnValues;
+	public int hazzardCount;
+	//public int hazzardCount2;
+	public float spawnWait;
+	public float startWait;
+	public float waveWait;
+	public Quaternion spawnRotation;
+    //public Quaternion spawnRotationDeimos;
+    private GameObject[] hazzardArray = new GameObject[3];
+	void Start (){
+		StartCoroutine (spawnWaves ());
+		Debug.Log ("Termino la rutina");
+        hazzardArray[0] = hazzard0;
+        hazzardArray[1] = hazzard1;
+        hazzardArray[2] = hazzard2;
 	}
-	
-	// Update is called once per frame
-	void Update () {
-	
+
+	IEnumerator spawnWaves () {
+		yield return new WaitForSeconds (startWait);
+		while (true) {
+			for (int i = 0; i < hazzardCount; i++) {
+				Vector3 spawnPosition = new Vector3 (Random.Range(-spawnValues.x, spawnValues.x), spawnValues.y, spawnValues.z);
+                
+				Instantiate (hazzardArray[(int)Random.Range(0.0f,2.3f)], spawnPosition, spawnRotation);
+				//Instantiate (hazzard2, spawnPosition, spawnRotationDeimos);
+				yield return new WaitForSeconds (spawnWait);
+			}
+
+			yield return new WaitForSeconds (waveWait);
+		}
 	}
-    /*
-    public void ResizeSpriteToScreen()
-    {
-        SpriteRenderer rs = GetComponent<SpriteRenderer>();
-    if(rs == null) return;
-
-        transform.localScale = new Vector3(1, 1, 1);
-        double width = rs.sprite.bounds.size.x;
-        double height = rs.sprite.bounds.size.y;
-
-        double worldScreenHeight = Camera.main.orthographicSize * 2.0;
-        double worldScreenWidth = worldScreenHeight / Screen.height * Screen.width;
-
-        transform.localScale = new Vector3((float)(worldScreenWidth / width),
-                                (float)(worldScreenHeight / height),
-                                1);
-    }*/
 }
