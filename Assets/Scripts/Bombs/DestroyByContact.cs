@@ -10,7 +10,10 @@ public class DestroyByContact : MonoBehaviour {
 			//return;
 		//}
 		//damage++;
-
+        if(other.tag == "Ally")
+        {
+            return;
+        }
 		Destroy (other.gameObject);
 		//if (damage == hp) {
 			//Destroy (gameObject);
