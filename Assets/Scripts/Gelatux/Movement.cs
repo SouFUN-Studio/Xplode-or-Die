@@ -48,6 +48,7 @@ public class Movement : MonoBehaviour {
             Vector3 currentRot = myTransform.eulerAngles;
             Vector3 currentFacePosition = face.transform.localPosition;
             face.transform.localPosition = currentFacePosition*-1;
+            Debug.Log(face.transform.localPosition);
             currentRot.y += 180.0f;
             myTransform.eulerAngles = currentRot;
             // cambia a idle innecesariamente idle();
