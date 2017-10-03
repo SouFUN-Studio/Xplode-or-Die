@@ -2,21 +2,39 @@
 using System.Collections;
 
 public class DestroyByContact : MonoBehaviour {
-	//public int hp;
-	//private int damage;
+	public int lifes;
+
+   
 	void OnTriggerEnter2D(Collider2D other) {
 
-		//if (other.tag == "Boundary" || other.tag == "MainCamera" || other.tag == "Player") {
-			//return;
-		//}
-		//damage++;
-        if(other.tag == "Ally")
+		if(other.tag == "Ally")
         {
             return;
         }
-		Destroy (other.gameObject);
-		//if (damage == hp) {
-			//Destroy (gameObject);
-		//}
+        if (other.tag == "Enemy")
+        {
+            Destroy(other.gameObject);
+            lifes--;
+        }
 	}
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        if(other.tag == "Enemy")
+        {
+            Destroy(other.gameObject);
+        }
+    }
+
+    public int getLifes()
+    {
+        return lifes;
+    }
+
+    public void setLifes(int lifes)
+    {
+        this.lifes = lifes;
+    }
+
+    
 }

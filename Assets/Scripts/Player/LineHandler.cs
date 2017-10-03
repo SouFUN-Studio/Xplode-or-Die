@@ -12,13 +12,14 @@ public class LineHandler : MonoBehaviour {
     {
         lineGO = new GameObject("Line");
         lineGO.AddComponent<LineRenderer>();
+        lineGO.tag = "Line";
         lineRenderer = lineGO.GetComponent<LineRenderer>();
         lineRenderer.material = new Material(Shader.Find("Mobile/Particles/Additive"));
         lineRenderer.startColor = c1;
         lineRenderer.endColor = c2;
         lineRenderer.startWidth = 0.3f;
         lineRenderer.endWidth = 0.0f;
-        lineRenderer.numPositions = 0;
+        lineRenderer.positionCount = 0;
         lineRenderer.materials[0] = m1;
     }
 
@@ -32,7 +33,7 @@ public class LineHandler : MonoBehaviour {
             if (touch.phase == TouchPhase.Moved)
             {   
                 
-                lineRenderer.numPositions = (i + 1);
+                lineRenderer.positionCount = (i + 1);
                 
                 
                 //lineRenderer.SetVertexCount(i + 1);
@@ -43,6 +44,7 @@ public class LineHandler : MonoBehaviour {
                 /* Add Collider */
 
                 BoxCollider bc = lineGO.AddComponent<BoxCollider>();
+                bc.isTrigger = true;
                 bc.transform.position = lineRenderer.transform.position;
                 bc.size = new Vector3(0.1f, 0.1f, 0.1f);
             }
@@ -50,7 +52,7 @@ public class LineHandler : MonoBehaviour {
             if (touch.phase == TouchPhase.Ended)
             {
                 /* Remove Line */
-                lineRenderer.numPositions = 0;
+                lineRenderer.positionCount = 0;
                 //lineRenderer.SetVertexCount(0);
                 i = 0;
 

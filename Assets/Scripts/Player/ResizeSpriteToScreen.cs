@@ -3,6 +3,16 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ResizeSpriteToScreen : MonoBehaviour {
+
+
+    private Vector3 colliderSize;
+    /* Box Collider init parameters *
+     ********************************
+     * Offset :  x = 0 y = -3.5
+     * Size : x = 5.75 y = 0.5
+     * Edge Radius : 0
+     */
+
     private void Start()
     {
         ResizeImg();
@@ -29,11 +39,13 @@ public class ResizeSpriteToScreen : MonoBehaviour {
         Vector3 yHeight = transform.localScale;
         yHeight.y = worldScreenHeight / height;
         transform.localScale = yHeight;
+        colliderSize = yHeight;
         //transform.localScale.y = worldScreenHeight / height;
 
     }
-    void ResizeBoxCollider()
+    public void reSizeCollider()
     {
-
+        GetComponent<BoxCollider2D>().offset.Set(0.0f, 0.0f);
+        GetComponent<BoxCollider2D>().size.Set(colliderSize.x, 11.0f);
     }
 }
