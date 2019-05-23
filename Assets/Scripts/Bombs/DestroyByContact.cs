@@ -13,25 +13,20 @@ public class DestroyByContact : MonoBehaviour {
         }
         if (other.tag == "Enemy")
         {
-            Destroy(other.gameObject);
+            GameObject.Find("GameController").GetComponent<GameController>().ResetCombo();
+            other.GetComponent<HazzardMover>().currentSpeed = 0.0f;
+            other.GetComponent<Animator>().SetBool("destroy", true);
             lifes--;
+            GameObject.Find("GameController").GetComponent<GameController>().DestroyAllies(lifes);
         }
 	}
 
-    private void OnTriggerStay2D(Collider2D other)
-    {
-        if(other.tag == "Enemy")
-        {
-            Destroy(other.gameObject);
-        }
-    }
-
-    public int getLifes()
+    public int GetLifes()
     {
         return lifes;
     }
 
-    public void setLifes(int lifes)
+    public void SetLifes(int lifes)
     {
         this.lifes = lifes;
     }

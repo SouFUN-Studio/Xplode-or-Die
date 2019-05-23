@@ -2,79 +2,152 @@
 using System.Collections;
 
 public class HazzardMover : MonoBehaviour {
-
+    //Use for select the use of the bomb beetwen normal, invert and multiple
+    public bool normal;
+    public bool invert;
+    public bool multiple;
+    public int life;
 	// Use this for initialization
-	public float speed;
+	public float currentSpeed;
+    public float newSpeed;
+    public GameObject tarjetPlatform;
 
-    /* Game controller for the arrows initialization and interaction
-    ****************************************************************
-    */
-    //Validation onTrigger enter and onTrigger exit
-    public bool firstArrow;
-    public bool secondArrow;
+    private Animator myAnimator;
+    private float startDistance;
+    private float distance;
+    private int  cornerNumber;
+    private Rigidbody2D rb;
+    private bool scored;
 
-    public GameObject corner0;
-    public GameObject corner1;
-    public GameObject corner2;
-    public GameObject corner3;
-
-    private GameObject[] corners = new GameObject[4];
-    
-	void Start () {
-        corners[0] = corner0;
-        corners[1] = corner1;
-        corners[2] = corner2;
-        corners[3] = corner3;
-        Rigidbody2D rb = GetComponent<Rigidbody2D> ();
-		rb.velocity = transform.up * speed;
-        //rb.velocity = transform.forward * speed;
-        randomArrow(corners);
-	}
-
-    public void randomArrow (GameObject[] corners)
-    {
-        int cornerNumber = (int)Random.Range(0.0f, 3.0f);
-        Debug.Log(cornerNumber);
-        corners[cornerNumber].GetComponent<SpriteRenderer>().enabled = true;
-        switch (cornerNumber)
+    //Use this to initialize
+    void Start () {
+       // Debug.Log("Start bomb" + gameObject.name);
+        rb = GetComponent<Rigidbody2D> ();
+		rb.velocity = transform.up * - currentSpeed;
+        myAnimator = GetComponent<Animator>();
+        myAnimator.SetFloat("distance", 100);
+        startDistance = Vector2.Distance(new Vector2(GetComponent<Transform>().position.x, 
+                                                GetComponent<Transform>().position.y), 
+                                    new Vector2(GetComponent<Transform>().position.x, 
+                                                tarjetPlatform.GetComponent<BoxCollider2D>().offset.y));
+        distance = startDistance;
+        scored = false;
+        if (normal)
         {
-            case 0:
-                {
-                    corners[1].SetActive(false);
-                    corners[2].SetActive(false);
-                    break;
-                }
-            case 1:
-                {
-                    corners[0].SetActive(false);
-                    corners[3].SetActive(false);
-                    break;
-                }
-            case 2:
-                {
-                    corners[0].SetActive(false);
-                    corners[3].SetActive(false);
-                    break;
-                }
-            case 3:
-                {
-                    corners[1].SetActive(false);
-                    corners[2].SetActive(false);
-                    break;
-                }
+            currentSpeed = 1f + newSpeed;
+            life = 1;
         }
-        
+        else
+        {
+            if (invert)
+            {
+                currentSpeed = 2f + newSpeed;
+                life = 1;
+            }
+            else
+            {
+                currentSpeed = 1.5f + newSpeed;
+                life = 10;
+            }
+        }
     }
 
-    public void OnTriggerEnter2D (Collider2D other)
+    void LateUpdate()
     {
+        rb.velocity = transform.up * -currentSpeed;
+        DistanceCalculator();
+        if (!GameObject.Find("GameController").GetComponent<LineHandler>().getOnTouch())
+        {
+        }
+
+        if (myAnimator.GetCurrentAnimatorStateInfo(0).IsName("End Animation"))
+        {
+            if (scored)
+            {
+                GameObject.Find("GameController").GetComponent<GameController>().SetScoreCount(100);
+            }
+            Destroy(this.gameObject);
+        }
+        myAnimator.SetFloat("distance", (distance *100)/startDistance);
 
     }
 
-    void FixedUpdate()
+    /* ********************************************************
+     * Distance Calculator to change the value of the animator*
+     * ********************************************************
+     */
+    private void DistanceCalculator()
     {
-
+        distance = Vector2.Distance(new Vector2(GetComponent<Transform>().position.x,
+                                        GetComponent<Transform>().position.y),
+                            new Vector2(GetComponent<Transform>().position.x,
+                                        tarjetPlatform.GetComponent<BoxCollider2D>().offset.y));
+        if ( distance > (startDistance / 3) * 2)
+        {
+            Debug.DrawLine(GetComponent<Transform>().position, new Vector3(GetComponent<Transform>().position.x,
+                                                                        tarjetPlatform.GetComponent<BoxCollider2D>().offset.y, 0.0f), new Color(0, 255, 0, 255));
+        }
+        else
+        {
+            if (distance > (startDistance / 3))
+            {
+                Debug.DrawLine(GetComponent<Transform>().position, new Vector3(GetComponent<Transform>().position.x,
+                                                                        tarjetPlatform.GetComponent<BoxCollider2D>().offset.y, 0.0f), new Color(255, 255, 0, 255));
+            }
+            else
+            {
+                Debug.DrawLine(GetComponent<Transform>().position, new Vector3(GetComponent<Transform>().position.x,
+                                                                        tarjetPlatform.GetComponent<BoxCollider2D>().offset.y, 0.0f), new Color(255, 0, 0, 255));
+            }
+        }
     }
 
 
+    /******************************
+     * method for destroy the bomb*
+     * ****************************
+     */
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag == "Line")
+        {
+            life--;
+            if (life == 0)
+            {
+                SetDestroy(true);
+                scored = true;
+                GameObject.Find("GameController").GetComponent<GameController>().AddCombo(1);
+                
+                if(this.gameObject.GetComponent<Transform>().position.x < 0)
+                {
+                    GameObject.Find("GameContoller").GetComponent<GameController>().SetComboPosition(
+                        new Vector3(
+                            this.gameObject.GetComponent<Transform>().position.x + 10.0f,
+                            this.gameObject.GetComponent<Transform>().position.y, 
+                            this.gameObject.GetComponent<Transform>().position.z));
+                }
+                GameObject.Find("Comboo").SetActive(true);
+            }
+        }
+    }
+
+    /**********************************************************************
+     * GET and SET methods for the private variables used in other scripts*
+     **********************************************************************
+     */
+    //@return String Corner number
+    public string GetCornerNumber()
+    {
+        return cornerNumber.ToString();
+    }
+    //@SET bool destroy
+    public void SetDestroy(bool destroy)
+    {
+        currentSpeed = 0.0f;
+        myAnimator.SetBool("destroy", destroy);
+    }
+    public void SetNewSpeed(float newSpeed)
+    {
+        this.newSpeed = newSpeed;
+    }
 }

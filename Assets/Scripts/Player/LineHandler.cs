@@ -5,6 +5,7 @@ public class LineHandler : MonoBehaviour {
     public Color c1 = Color.yellow;
     public Color c2 = Color.red;
     public Material m1;
+    public bool onTouch;
     private GameObject lineGO;
     private LineRenderer lineRenderer;
     private int i = 0;
@@ -25,32 +26,50 @@ public class LineHandler : MonoBehaviour {
 
     void Update()
     {
-
         if (Input.touchCount > 0 )
         {
             Touch touch = Input.GetTouch(0);
 
-            if (touch.phase == TouchPhase.Moved)
-            {   
-                
-                lineRenderer.positionCount = (i + 1);
-                
-                
-                //lineRenderer.SetVertexCount(i + 1);
-                Vector3 mPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 1);
-                lineRenderer.SetPosition(i, Camera.main.ScreenToWorldPoint(mPosition));
-                i++;
+            if (touch.phase == TouchPhase.Moved)//true
+            {
+                //Create only if count is less than X
+                if (i + 1 > 21)
+                {
+                    Vector3[] positions = new Vector3[lineRenderer.positionCount];
+                    lineRenderer.GetPositions(positions);
+                    Vector3[] newPositions = new Vector3[20];
+                    for(int j = 0; j< 20; j++)
+                    {
+                        newPositions[j] = positions[j + 1];
+                    }
+                    lineRenderer.SetPositions(newPositions);
+                    lineRenderer.positionCount = 10;
+                    i = 20;
+                    BoxCollider2D[] lineColliders = lineGO.GetComponents<BoxCollider2D>();
 
-                /* Add Collider */
+                    Destroy(lineColliders[0]);
+                }
+                onTouch = true;
+                    lineRenderer.positionCount = (i + 1);
 
-                BoxCollider bc = lineGO.AddComponent<BoxCollider>();
-                bc.isTrigger = true;
-                bc.transform.position = lineRenderer.transform.position;
-                bc.size = new Vector3(0.1f, 0.1f, 0.1f);
+
+                    //lineRenderer.SetVertexCount(i + 1);
+                    Vector3 mPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 1);
+                    lineRenderer.SetPosition(i, Camera.main.ScreenToWorldPoint(mPosition));
+                    i++;
+
+                    /* Add Collider */
+
+                    BoxCollider2D bc = lineGO.AddComponent<BoxCollider2D>();
+                    bc.isTrigger = true;
+                    bc.transform.position = lineRenderer.transform.position;
+                    bc.size = new Vector3(0.1f, 0.1f, 0.1f);
+                
             }
 
-            if (touch.phase == TouchPhase.Ended)
+            if (touch.phase == TouchPhase.Ended)//else 
             {
+                onTouch = false;
                 /* Remove Line */
                 lineRenderer.positionCount = 0;
                 //lineRenderer.SetVertexCount(0);
@@ -58,13 +77,18 @@ public class LineHandler : MonoBehaviour {
 
                 /* Remove Line Colliders */
 
-                BoxCollider[] lineColliders = lineGO.GetComponents<BoxCollider>();
+                BoxCollider2D[] lineColliders = lineGO.GetComponents<BoxCollider2D>();
 
-                foreach (BoxCollider b in lineColliders)
+                foreach (BoxCollider2D b in lineColliders)
                 {
                     Destroy(b);
                 }
             }
         }
+    }
+
+    public bool getOnTouch()
+    {
+        return onTouch;
     }
 }

@@ -19,36 +19,42 @@ public class Movement : MonoBehaviour {
     private float currentTime = 0.0f;
     private float step = 1f;
 
+
+    private int count;
 	void Start () {
         //Initialization of ally components
         myTransform = this.transform;
         myBody = this.GetComponent<Rigidbody2D>();
         myWidth = this.GetComponent<SpriteRenderer>().bounds.extents.x;
         myAnimator = this.GetComponent<Animator>();
-
-        //Initialization of wait time
-        StartCoroutine(TimerRoutine());
+        count = FindObjectOfType<GameController>().getCount();
+    //Initialization of wait time
+    StartCoroutine(TimerRoutine());
 	}
     private void Update()
     {
         Physics2D.IgnoreLayerCollision(8,8,true);
     }
 
-    void FixedUpdate () {
+    void LateUpdate () {
+        if (myAnimator.GetCurrentAnimatorStateInfo(0).IsName("Destroy"))
+        {
+            Destroy(this.gameObject);
+        }
         //Check to see if there's ground in front of us before moving forward
         Vector2 lineCastPosition = myTransform.position - myTransform.right * myWidth;
-        Debug.DrawLine(lineCastPosition,lineCastPosition + Vector2.down);
+//DEBUG        Debug.DrawLine(lineCastPosition,lineCastPosition + Vector2.down);
         bool isGrounded = Physics2D.Linecast(lineCastPosition,
                           lineCastPosition + Vector2.down, allyMask);
         myAnimator.SetFloat("speed", speed);
-
+        myAnimator.SetInteger("count", count);
         //if theres not ground, turn around
         if (!isGrounded)
         {
             Vector3 currentRot = myTransform.eulerAngles;
             Vector3 currentFacePosition = face.transform.localPosition;
             face.transform.localPosition = currentFacePosition*-1;
-            Debug.Log(face.transform.localPosition);
+      //      Debug.Log(face.transform.localPosition);
             currentRot.y += 180.0f;
             myTransform.eulerAngles = currentRot;
             // cambia a idle innecesariamente idle();
@@ -77,9 +83,8 @@ public class Movement : MonoBehaviour {
         {
             myBody.velocity = Vector2.up * jumpForce;
         }
-
     }
-    //Walk NECESITA SER MODIFICADO APRA SOLO AUMENTAR speed PARA CAMINAR
+    
     public void speedUp(bool grounded)
     {
         //If rigidbody is grounded, can walk
@@ -90,7 +95,7 @@ public class Movement : MonoBehaviour {
         }
         
     }
-    //idle NECESITA SER MODIFICADO PARA REDUCIR speed PARA DETENERSE
+    
     public void speedDown()
     {
         speed = 0.0f;
@@ -108,7 +113,10 @@ public class Movement : MonoBehaviour {
         }
     }
 
-
+    /**********************************************************************
+     * GET and SET methods for the private variables used in other scripts*
+     **********************************************************************
+     */
 
     public void OnCollisionStay2D(Collision2D collision)
     {
@@ -117,5 +125,11 @@ public class Movement : MonoBehaviour {
     public void OnCollisionExit2D(Collision2D collision)
     {
         rbIsGrounded = false;
+    }
+    public void SetDestroy(bool destroy)
+    {
+        speed = 0.0f;
+        myAnimator.SetBool("isDead", destroy);
+     //   Debug.Log("Is dead: " + this.gameObject.name);
     }
 }
