@@ -33,18 +33,18 @@ public class LineHandler : MonoBehaviour {
             if (touch.phase == TouchPhase.Moved)//true
             {
                 //Create only if count is less than X
-                if (i + 1 > 21)
+                if (i + 1 > 11)//21
                 {
                     Vector3[] positions = new Vector3[lineRenderer.positionCount];
                     lineRenderer.GetPositions(positions);
                     Vector3[] newPositions = new Vector3[20];
-                    for(int j = 0; j< 20; j++)
+                    for(int j = 0; j< 10; j++)//20
                     {
                         newPositions[j] = positions[j + 1];
                     }
                     lineRenderer.SetPositions(newPositions);
-                    lineRenderer.positionCount = 10;
-                    i = 20;
+                    lineRenderer.positionCount = 10;//20
+                    i = 10;//20
                     BoxCollider2D[] lineColliders = lineGO.GetComponents<BoxCollider2D>();
 
                     Destroy(lineColliders[0]);
@@ -53,7 +53,6 @@ public class LineHandler : MonoBehaviour {
                     lineRenderer.positionCount = (i + 1);
 
 
-                    //lineRenderer.SetVertexCount(i + 1);
                     Vector3 mPosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, 1);
                     lineRenderer.SetPosition(i, Camera.main.ScreenToWorldPoint(mPosition));
                     i++;
@@ -63,7 +62,7 @@ public class LineHandler : MonoBehaviour {
                     BoxCollider2D bc = lineGO.AddComponent<BoxCollider2D>();
                     bc.isTrigger = true;
                     bc.transform.position = lineRenderer.transform.position;
-                    bc.size = new Vector3(0.1f, 0.1f, 0.1f);
+                    bc.size = new Vector3(0.15f, 0.15f, 0.15f); //(0.1f,0.1f,0.1f)
                 
             }
 

@@ -17,7 +17,10 @@ public class ResizeSpriteToScreen : MonoBehaviour {
     {
         ResizeImg();
     }
-
+    private void LateUpdate()
+    {
+        ResizeImg();
+    }
     void ResizeImg()
     {
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
@@ -43,7 +46,7 @@ public class ResizeSpriteToScreen : MonoBehaviour {
         //transform.localScale.y = worldScreenHeight / height;
 
     }
-    public void reSizeCollider()
+    public void ReSizeCollider()
     {
         GetComponent<BoxCollider2D>().offset.Set(0.0f, 0.0f);
         GetComponent<BoxCollider2D>().size.Set(colliderSize.x, 11.0f);

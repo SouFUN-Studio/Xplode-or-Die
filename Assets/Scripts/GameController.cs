@@ -4,6 +4,12 @@ using UnityEngine.UI;
 
 
 public class GameController : MonoBehaviour {
+
+    /*************************************
+     *                                   *
+     *         PUBLIC VARIABLES          *
+     *                                   *
+     ************************************/
     [Header("Destroy by Contact Script")]
     // Object that contain the destroy boundary script
     public DestroyByContact DBC;
@@ -15,6 +21,8 @@ public class GameController : MonoBehaviour {
     [Header("Canvas")]
     //GameOver canvas 
     public Canvas GameOver;
+
+    public HighscoreTable HighscoreTable;
     //combo NOT CREATED YET
     public GameObject combo;
     [Header("Gelatux")]
@@ -36,11 +44,18 @@ public class GameController : MonoBehaviour {
 
     [Header("Gameover text's")]
     public Text gameoverScore;
+    public Text highscore;
 
     public TextMesh textCombo;
 
     [Header("Animation State")]
     public int count;
+
+    /*************************************
+     *                                   *
+     *         PRIVATE VARIABLES         *
+     *                                   *
+     ************************************/
 
     readonly string highScore;
 
@@ -53,7 +68,13 @@ public class GameController : MonoBehaviour {
 
     private float speedUp = 0f;
 
-	void Start (){
+    /*************************************
+     *                                   *
+     *              START                *
+     *                                   *
+     ************************************/
+
+    void Start (){
         hazzardArray[0] = hazzard0;
         hazzardArray[1] = hazzard1;
         hazzardArray[2] = hazzard2;
@@ -61,26 +82,71 @@ public class GameController : MonoBehaviour {
         currentCombo = 0; 
     }
 
+    /*************************************
+     *                                   *
+     *              UPDATE               *
+     *                                   *
+     ************************************/
     private void Update()
     {
         textHUD.text = "Score: " + score.ToString();
         textCombo.text = currentCombo.ToString();
         currentScore = score;
+
+        //GAMEOVER 
         if (DBC.GetLifes() == 0)
         {
+            HighscoreTable.AddHighscoreEntry(currentScore);
+
             GameObject.Find("AdsController").GetComponent<UnityAdsPlacement>().ShowAd();
             GameOver.enabled = true;
             StopHazzardSpawn();
-            RSTS.reSizeCollider();
+            RSTS.ReSizeCollider();
+            highscore.text = HighscoreTable.GetFirstScore();
             gameoverScore.text = currentScore.ToString();
             ResetGame();
             DBC.SetLifes(3);
         }
         count = (allies.Length*30)/allies.Length;
+
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+
+            if (GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().isActiveAndEnabled)
+                GameObject.Find("Exit Canvas").GetComponent<Canvas>().enabled = true;
+
+            if (GameObject.Find("Highscore Canvas").GetComponent<Canvas>().isActiveAndEnabled)
+            {
+                GameObject.Find("Highscore Canvas").GetComponent<Canvas>().enabled = false;
+                GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().enabled = true;
+            }
+
+            if (GameObject.Find("Help Menu Canvas").GetComponent<Canvas>().isActiveAndEnabled && Input.GetKeyDown(KeyCode.Escape))
+            {
+                GameObject.Find("Help Menu Canvas").GetComponent<Canvas>().enabled = false;
+                GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().enabled = true;
+                //Extra Code to restart the help menu configuration
+                GetComponent<HelpMenu>().ResetHelpMenu();
+            }
+
+            if (GameObject.Find("Credits Canvas").GetComponent<Canvas>().isActiveAndEnabled && Input.GetKeyDown(KeyCode.Escape))
+            {
+                GameObject.Find("Credits Canvas").GetComponent<Canvas>().enabled = false;
+                GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().enabled = true;
+            }
+        }
+            
+        
     }
 
-    /* time to launch waves */
+    /*************************************
+     *                                   *
+     *         BOMBS CONTROLLER          *
+     *                                   *
+     ************************************/
 
+    /* Coroutine*/
     IEnumerator SpawnWaves () {
 		yield return new WaitForSeconds (startWait);
 		while (true) {
@@ -96,34 +162,14 @@ public class GameController : MonoBehaviour {
             {
                 hazzardArray[a].GetComponent<HazzardMover>().SetNewSpeed(speedUp);
             }
-            speedUp += 0.5f;
+            speedUp += 0.3f;
+            spawnWait -= 0.05f;
 		}
 	}
 
-    /* Start the hazzard coroutine 
-     * */
-    public void StartHazzardSpawn()
-    {
-        StartCoroutine(SpawnWaves());
-    }
+    /* Destroy bombs */
 
-    /* Stop the hazzard coroutine
-     * */
-
-    public void StopHazzardSpawn()
-    {
-        StopAllCoroutines();
-    }
-
-    public void SetScoreCount(int score)
-    {
-        this.score += score;
-        currentScore = score;
-    }
-
-    /* Destroy all bombs
-     * */
-     public void DestroyBombs()
+    public void DestroyBombs()
     {
         enemyArray = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (GameObject bomb in enemyArray)
@@ -131,55 +177,32 @@ public class GameController : MonoBehaviour {
             bomb.GetComponent<HazzardMover>().SetDestroy(true);
         }
     }
-
-    /*
-     * Destroy blocks of allies
-     */
-     public void DestroyAllies(int lifes)
+     
+     /* Start the hazzard coroutine*/
+     
+    public void StartHazzardSpawn()
     {
-        //Debug.Log("Lifes: " + lifes);
-        int aux =  (allies.Length/3)*lifes;
-       // Debug.Log("Aux: " + aux);
-        GameObject[] deadAllies = GameObject.FindGameObjectsWithTag("Ally");
-        for (int i = aux; i < deadAllies.Length; i++)
-        {
-
-            deadAllies[i].GetComponent<Movement>().SetDestroy(true);
-
-        }
+        StartCoroutine(SpawnWaves());
     }
 
-    /* Reset scores
-     */
-     public void ResetScores()
+    /* Stop the hazzard coroutine*/
+
+    public void StopHazzardSpawn()
     {
-        textHUD.text = "Score: 0";
-        score = 0;
+        StopAllCoroutines();
     }
 
-    /*Reset Game
-     */
-     public void ResetGame()
+    public void SetSpeedUp(float speedUp)
     {
-        ResetScores();
-        DestroyBombs();
+        this.speedUp = speedUp;
     }
+    
 
-    public void ResetCombo()
-    {
-        currentCombo = 0;
-    }
-
-    public void AddCombo(int currentCombo)
-    {
-        this.currentCombo = this.currentCombo + currentCombo;
-    }
-
-    public void SetComboPosition(Vector3 newPosition)
-    {
-        combo.GetComponent<Transform>().position = newPosition;
-    }
-
+    /*************************************
+     *                                   *
+     *         ALLIES CONTROLLER         *
+     *                                   *
+     ************************************/
     public void SpawnAllies()
     {
         int currentCount = GameObject.FindGameObjectsWithTag("Ally").Length;
@@ -206,11 +229,79 @@ public class GameController : MonoBehaviour {
     {
         return count;
     }
-    /***************************************************************************
-     *                                                                         *
-     *                           SAVE GAME RESOURCES                           *
-     *                                                                         *
-     **************************************************************************/
+    public void DestroyAllies(int lifes)
+    {
+        //Debug.Log("Lifes: " + lifes);
+        int aux =  (allies.Length/3)*lifes;
+       // Debug.Log("Aux: " + aux);
+        GameObject[] deadAllies = GameObject.FindGameObjectsWithTag("Ally");
+        for (int i = aux; i < deadAllies.Length; i++)
+        {
 
+            deadAllies[i].GetComponent<Movement>().SetDestroy(true);
+
+        }
+    }
+
+    /*************************************
+     *                                   *
+     *         SCORE CONTROLLER          *
+     *                                   *
+     ************************************/
+    public void ResetScores()
+    {
+        textHUD.text = "Score: 0";
+        score = 0;
+    }
+
+    public void SetScoreCount(int score)
+    {
+        this.score += score;
+        currentScore = score;
+    }
+
+
+
+    /*************************************
+     *                                   *
+     *         COMBO CONTROLLER          *
+     *                                   *
+     ************************************/
+
+    public void AddCombo(int currentCombo)
+    {
+        this.currentCombo = this.currentCombo + currentCombo;
+    }
+
+    public void SetComboPosition(Vector3 newPosition)
+    {
+        combo.GetComponent<Transform>().position = newPosition;
+    }
+    public void ResetCombo()
+    {
+        currentCombo = 0;
+    }
+
+    /*************************************
+     *                                   *
+     *       RESTART PLAYING GAME        *
+     *                                   *
+     ************************************/
+    public void ResetGame()
+    {
+        spawnWait = 1f;
+        speedUp = 0f;
+        DestroyBombs();
+        ResetScores();
+    }
+    /*************************************
+     *                                   *
+     *         APLICATION CONTROLLER     *
+     *                                   *
+     ************************************/
+    public void CloseApplication()
+    {
+        Application.Quit();
+    }
     
 }

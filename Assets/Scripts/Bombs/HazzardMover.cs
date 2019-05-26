@@ -7,6 +7,7 @@ public class HazzardMover : MonoBehaviour {
     public bool invert;
     public bool multiple;
     public int life;
+
 	// Use this for initialization
 	public float currentSpeed;
     public float newSpeed;
@@ -46,7 +47,7 @@ public class HazzardMover : MonoBehaviour {
             }
             else
             {
-                currentSpeed = 1.5f + newSpeed;
+                currentSpeed = 0.7f + newSpeed/2;
                 life = 10;
             }
         }
@@ -62,10 +63,6 @@ public class HazzardMover : MonoBehaviour {
 
         if (myAnimator.GetCurrentAnimatorStateInfo(0).IsName("End Animation"))
         {
-            if (scored)
-            {
-                GameObject.Find("GameController").GetComponent<GameController>().SetScoreCount(100);
-            }
             Destroy(this.gameObject);
         }
         myAnimator.SetFloat("distance", (distance *100)/startDistance);
@@ -114,8 +111,12 @@ public class HazzardMover : MonoBehaviour {
             life--;
             if (life == 0)
             {
-                SetDestroy(true);
                 scored = true;
+                if (scored)
+                {
+                    GameObject.Find("GameController").GetComponent<GameController>().SetScoreCount(100);
+                }
+                SetDestroy(true);
                 GameObject.Find("GameController").GetComponent<GameController>().AddCombo(1);
                 
                 if(this.gameObject.GetComponent<Transform>().position.x < 0)
@@ -143,8 +144,9 @@ public class HazzardMover : MonoBehaviour {
     //@SET bool destroy
     public void SetDestroy(bool destroy)
     {
-        currentSpeed = 0.0f;
         myAnimator.SetBool("destroy", destroy);
+        GetComponent<BoxCollider2D>().enabled = false;
+        currentSpeed = 0.0f;
     }
     public void SetNewSpeed(float newSpeed)
     {
