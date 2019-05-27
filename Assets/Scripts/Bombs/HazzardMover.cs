@@ -116,21 +116,11 @@ public class HazzardMover : MonoBehaviour {
                 {
                     GameObject.Find("GameController").GetComponent<GameController>().SetScoreCount(100);
                     GameObject.Find("GameController").GetComponent<GameController>().AddCombo(1);
-                    //GameObject.Find("GameController").GetComponent<GameController>().SetComboPosition(this.transform.position+ new Vector3(1,1,0));
+                    GameObject.FindGameObjectWithTag("Combo").transform.position = this.gameObject.transform.position;
                     GameObject.FindGameObjectWithTag("Combo").GetComponent<Animator>().enabled = false;
                     GameObject.FindGameObjectWithTag("Combo").GetComponent<Animator>().enabled = true;
                 }
                 SetDestroy(true);
-                
-                if(this.gameObject.GetComponent<Transform>().position.x < 0)
-                {
-                    GameObject.Find("GameContoller").GetComponent<GameController>().SetComboPosition(
-                        new Vector3(
-                            this.gameObject.GetComponent<Transform>().position.x + 10.0f,
-                            this.gameObject.GetComponent<Transform>().position.y, 
-                            this.gameObject.GetComponent<Transform>().position.z));
-                }
-                //GameObject.Find("Comboo").SetActive(true);
             }
         }
     }

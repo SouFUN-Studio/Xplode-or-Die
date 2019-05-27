@@ -193,6 +193,7 @@ public class GameController : MonoBehaviour {
 
     public void StopHazzardSpawn()
     {
+        SpawnWaves().MoveNext();
         StopAllCoroutines();
     }
 
@@ -303,7 +304,7 @@ public class GameController : MonoBehaviour {
         ResetScores();
         ResetCombo();
         
-        Destroy(GameObject.Find("Combo"));
+        Destroy(GameObject.FindGameObjectWithTag("Combo"));
     }
 
     public void StartGame()
