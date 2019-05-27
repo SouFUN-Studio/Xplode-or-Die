@@ -27,7 +27,7 @@ public class HighscoreTable : MonoBehaviour {
         entryTemplate = entryContainer.Find("Highscore Entry Template");
 
         entryTemplate.gameObject.SetActive(false);
-//        PlayerPrefs.DeleteKey("highscoreTable");
+//        PlayerPrefs.DeleteKey("highscoreTable"); //DELETE DATABASE    
         string jsonString = PlayerPrefs.GetString("highscoreTable");
         
         Highscores highscores = JsonUtility.FromJson<Highscores>(jsonString);
@@ -54,7 +54,6 @@ public class HighscoreTable : MonoBehaviour {
         entryTemplate = entryContainer.Find("Highscore Entry Template");
 
         entryTemplate.gameObject.SetActive(false);
-        //        PlayerPrefs.DeleteKey("highscoreTable");
         string jsonString = PlayerPrefs.GetString("highscoreTable");
 
         Highscores highscores = JsonUtility.FromJson<Highscores>(jsonString);
@@ -184,12 +183,12 @@ public class HighscoreTable : MonoBehaviour {
         return highscores;
     }
 
-    public string GetFirstScore()
+    public int GetFirstScore()
     {
         Highscores highscores = JsonUtility.FromJson<Highscores>(PlayerPrefs.GetString("highscoreTable"));
         highscores = SortScoreList(highscores);
 
-        return highscores.highscoreEntryList[0].score.ToString();
+        return highscores.highscoreEntryList[0].score;
     }
 
     private class Highscores {

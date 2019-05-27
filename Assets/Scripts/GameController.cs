@@ -22,9 +22,11 @@ public class GameController : MonoBehaviour {
     //GameOver canvas 
     public Canvas GameOver;
 
+    public Image newRecordImage;
+
     public HighscoreTable HighscoreTable;
     //combo NOT CREATED YET
-    public GameObject combo;
+    public GameObject comboObject;
     [Header("Gelatux")]
     public GameObject[] allies;
     [Header("Bombs")]
@@ -46,7 +48,7 @@ public class GameController : MonoBehaviour {
     public Text gameoverScore;
     public Text highscore;
 
-    public Text textCombo;
+    public Text gameoverCombo;
 
     [Header("Animation State")]
     public int count;
@@ -65,8 +67,12 @@ public class GameController : MonoBehaviour {
     private  int currentScore;
     private int score;
     private int currentCombo;
+    private int combo;
+    private int maxCombo;
 
     private float speedUp;
+
+    //   private Coroutine bombsCoroutine;
 
     /*************************************
      *                                   *
@@ -80,6 +86,7 @@ public class GameController : MonoBehaviour {
         hazzardArray[2] = hazzard2;
         count = (allies.Length * 30) / allies.Length;
         currentCombo = 0;
+        maxCombo = 0;
         speedUp = 0f;
     }
 
@@ -91,22 +98,23 @@ public class GameController : MonoBehaviour {
     private void Update()
     {
         textHUD.text = "Score: " + score.ToString(); //+ speedUp.ToString();
-        textCombo.text = currentCombo.ToString();
+        comboObject.GetComponentInChildren<TextMesh>().text = combo.ToString();
         currentScore = score;
-
-
+        currentCombo = combo;
 
         //GAMEOVER 
         if (DBC.GetLifes() == 0)
         {
             SetSpeedUp(0.0f);
+            NewRecord();
             HighscoreTable.AddHighscoreEntry(currentScore);
             GameObject.Find("AdsController").GetComponent<UnityAdsPlacement>().ShowAd();
             GameOver.enabled = true;
             StopHazzardSpawn();
             RSTS.ReSizeCollider();
-            highscore.text = HighscoreTable.GetFirstScore();
+            highscore.text = HighscoreTable.GetFirstScore().ToString();
             gameoverScore.text = currentScore.ToString();
+            gameoverCombo.text = maxCombo.ToString();
             ResetGame();
             DBC.SetLifes(3);
         }
@@ -168,6 +176,7 @@ public class GameController : MonoBehaviour {
             speedUp += 0.3f;
             spawnWait -= 0.05f;
 		}
+
 	}
 
     /* Destroy bombs */
@@ -185,7 +194,8 @@ public class GameController : MonoBehaviour {
      
     public void StartHazzardSpawn()
     {
-        StartCoroutine(SpawnWaves());
+        //StopCoroutine(bombsCoroutine);
+        StartCoroutine("SpawnWaves");
         
     }
 
@@ -193,8 +203,7 @@ public class GameController : MonoBehaviour {
 
     public void StopHazzardSpawn()
     {
-        SpawnWaves().MoveNext();
-        StopAllCoroutines();
+        StopCoroutine("SpawnWaves");
     }
 
     public void SetSpeedUp(float speedUp)
@@ -238,9 +247,7 @@ public class GameController : MonoBehaviour {
     }
     public void DestroyAllies(int lifes)
     {
-        //Debug.Log("Lifes: " + lifes);
         int aux =  (allies.Length/3)*lifes;
-       // Debug.Log("Aux: " + aux);
         GameObject[] deadAllies = GameObject.FindGameObjectsWithTag("Ally");
         for (int i = aux; i < deadAllies.Length; i++)
         {
@@ -267,6 +274,16 @@ public class GameController : MonoBehaviour {
         currentScore = score;
     }
 
+    public void NewRecord()
+    {
+        Debug.Log(currentScore);
+        if (currentScore > HighscoreTable.GetFirstScore())
+        {
+            newRecordImage.enabled = true;
+            Debug.Log("new record" + currentScore + ">" + HighscoreTable.GetFirstScore());
+        }
+        }
+
 
 
     /*************************************
@@ -274,22 +291,24 @@ public class GameController : MonoBehaviour {
      *         COMBO CONTROLLER          *
      *                                   *
      ************************************/
-     public void InstantiateCombo()
-    {
-        Instantiate(combo, new Vector3(0,0,0), new Quaternion());
-    }
-    public void AddCombo(int combo)
-    {
-        this.currentCombo = this.currentCombo + combo;
-    }
 
-    public void SetComboPosition(Vector3 newPosition)
+    public void SetComboCount(int combo)
     {
-        combo.GetComponent<Transform>().position = newPosition;
+        this.combo += combo;
+        currentCombo = combo;
     }
     public void ResetCombo()
     {
-        currentCombo = 0;
+        maxCombo = GetMaxCombo();
+        combo = 0;
+    }
+
+    public int GetMaxCombo()
+    {
+        if (maxCombo < currentCombo)
+            return maxCombo = currentCombo;
+        else
+            return maxCombo;
     }
 
     /*************************************
@@ -304,12 +323,12 @@ public class GameController : MonoBehaviour {
         ResetScores();
         ResetCombo();
         
-        Destroy(GameObject.FindGameObjectWithTag("Combo"));
+        //Destroy(GameObject.FindGameObjectWithTag("Combo"));
     }
 
     public void StartGame()
     {
-        InstantiateCombo();
+        //InstantiateCombo();
         SetSpeedUp(0.0f);
         SpawnAllies();
         StartHazzardSpawn();
