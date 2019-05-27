@@ -27,7 +27,7 @@ public class Movement : MonoBehaviour {
         myBody = this.GetComponent<Rigidbody2D>();
         myWidth = this.GetComponent<SpriteRenderer>().bounds.extents.x;
         myAnimator = this.GetComponent<Animator>();
-        count = FindObjectOfType<GameController>().getCount();
+        count = FindObjectOfType<GameController>().GetCount();
     //Initialization of wait time
     StartCoroutine(TimerRoutine());
 	}

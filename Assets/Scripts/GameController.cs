@@ -46,7 +46,7 @@ public class GameController : MonoBehaviour {
     public Text gameoverScore;
     public Text highscore;
 
-    public TextMesh textCombo;
+    public Text textCombo;
 
     [Header("Animation State")]
     public int count;
@@ -66,7 +66,7 @@ public class GameController : MonoBehaviour {
     private int score;
     private int currentCombo;
 
-    private float speedUp = 0f;
+    private float speedUp;
 
     /*************************************
      *                                   *
@@ -79,7 +79,8 @@ public class GameController : MonoBehaviour {
         hazzardArray[1] = hazzard1;
         hazzardArray[2] = hazzard2;
         count = (allies.Length * 30) / allies.Length;
-        currentCombo = 0; 
+        currentCombo = 0;
+        speedUp = 0f;
     }
 
     /*************************************
@@ -89,15 +90,17 @@ public class GameController : MonoBehaviour {
      ************************************/
     private void Update()
     {
-        textHUD.text = "Score: " + score.ToString();
+        textHUD.text = "Score: " + score.ToString(); //+ speedUp.ToString();
         textCombo.text = currentCombo.ToString();
         currentScore = score;
+
+
 
         //GAMEOVER 
         if (DBC.GetLifes() == 0)
         {
+            SetSpeedUp(0.0f);
             HighscoreTable.AddHighscoreEntry(currentScore);
-
             GameObject.Find("AdsController").GetComponent<UnityAdsPlacement>().ShowAd();
             GameOver.enabled = true;
             StopHazzardSpawn();
@@ -149,18 +152,18 @@ public class GameController : MonoBehaviour {
     /* Coroutine*/
     IEnumerator SpawnWaves () {
 		yield return new WaitForSeconds (startWait);
+        
 		while (true) {
 			for (int i = 0; i < hazzardCount; i++) {
 				Vector3 spawnPosition = new Vector3 (Random.Range(-spawnValues.x, spawnValues.x), spawnValues.y, spawnValues.z);
                 
 				Instantiate (hazzardArray[(int)Random.Range(0.0f,2.3f)], spawnPosition, spawnRotation);
-				//Instantiate (hazzard2, spawnPosition, spawnRotationDeimos);
 				yield return new WaitForSeconds (spawnWait);
 			}
 			yield return new WaitForSeconds (waveWait);
             for(int a = 0; a < hazzardArray.Length; a++)
             {
-                hazzardArray[a].GetComponent<HazzardMover>().SetNewSpeed(speedUp);
+                hazzardArray[a].GetComponent<HazzardMover>().SetNewSpeed(GetSpeedUP());
             }
             speedUp += 0.3f;
             spawnWait -= 0.05f;
@@ -183,6 +186,7 @@ public class GameController : MonoBehaviour {
     public void StartHazzardSpawn()
     {
         StartCoroutine(SpawnWaves());
+        
     }
 
     /* Stop the hazzard coroutine*/
@@ -196,8 +200,10 @@ public class GameController : MonoBehaviour {
     {
         this.speedUp = speedUp;
     }
-    
-
+    public float GetSpeedUP()
+    {
+        return this.speedUp;
+    }
     /*************************************
      *                                   *
      *         ALLIES CONTROLLER         *
@@ -225,7 +231,7 @@ public class GameController : MonoBehaviour {
         }
     }
 
-    public int getCount()
+    public int GetCount()
     {
         return count;
     }
@@ -267,10 +273,13 @@ public class GameController : MonoBehaviour {
      *         COMBO CONTROLLER          *
      *                                   *
      ************************************/
-
-    public void AddCombo(int currentCombo)
+     public void InstantiateCombo()
     {
-        this.currentCombo = this.currentCombo + currentCombo;
+        Instantiate(combo, new Vector3(0,0,0), new Quaternion());
+    }
+    public void AddCombo(int combo)
+    {
+        this.currentCombo = this.currentCombo + combo;
     }
 
     public void SetComboPosition(Vector3 newPosition)
@@ -290,10 +299,22 @@ public class GameController : MonoBehaviour {
     public void ResetGame()
     {
         spawnWait = 1f;
-        speedUp = 0f;
         DestroyBombs();
         ResetScores();
+        ResetCombo();
+        
+        Destroy(GameObject.Find("Combo"));
     }
+
+    public void StartGame()
+    {
+        InstantiateCombo();
+        SetSpeedUp(0.0f);
+        SpawnAllies();
+        StartHazzardSpawn();
+    }
+
+    
     /*************************************
      *                                   *
      *         APLICATION CONTROLLER     *
