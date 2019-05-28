@@ -146,6 +146,11 @@ public class GameController : MonoBehaviour {
                 GameObject.Find("Credits Canvas").GetComponent<Canvas>().enabled = false;
                 GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().enabled = true;
             }
+            if (GameObject.Find("Settings Canvas").GetComponent<Canvas>().isActiveAndEnabled && Input.GetKeyDown(KeyCode.Escape))
+            {
+                GameObject.Find("Settings Canvas").GetComponent<Canvas>().enabled = false;
+                GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().enabled = true;
+            }
         }
             
         
@@ -174,7 +179,8 @@ public class GameController : MonoBehaviour {
                 hazzardArray[a].GetComponent<HazzardMover>().SetNewSpeed(GetSpeedUP());
             }
             speedUp += 0.3f;
-            spawnWait -= 0.05f;
+            if(spawnWait > 0.5)
+                spawnWait -= 0.05f;
 		}
 
 	}
@@ -280,7 +286,7 @@ public class GameController : MonoBehaviour {
         if (currentScore > HighscoreTable.GetFirstScore())
         {
             newRecordImage.enabled = true;
-            Debug.Log("new record" + currentScore + ">" + HighscoreTable.GetFirstScore());
+            //Debug.Log("new record" + currentScore + ">" + HighscoreTable.GetFirstScore());
         }
         }
 
@@ -322,6 +328,10 @@ public class GameController : MonoBehaviour {
         DestroyBombs();
         ResetScores();
         ResetCombo();
+        foreach(GameObject b in hazzardArray)
+        {
+            b.GetComponent<HazzardMover>().SetNewSpeed(0.0f);
+        }
         
         //Destroy(GameObject.FindGameObjectWithTag("Combo"));
     }

@@ -35,19 +35,19 @@ public class HazzardMover : MonoBehaviour {
         scored = false;
         if (normal)
         {
-            currentSpeed = 1f + newSpeed;
+            currentSpeed = Mathf.Log(1f + newSpeed, 2f) + 1f;
             life = 1;
         }
         else
         {
             if (invert)
             {
-                currentSpeed = 2f + newSpeed;
+                currentSpeed = Mathf.Log(2f + newSpeed, 2f) + 1f;
                 life = 1;
             }
             else
             {
-                currentSpeed = 0.7f + newSpeed/2;
+                currentSpeed = Mathf.Log(1f + newSpeed) + 0.8f;
                 life = 10;
             }
         }
@@ -146,5 +146,8 @@ public class HazzardMover : MonoBehaviour {
     {
         this.newSpeed = newSpeed;
     }
-
+    public float GetNewSpeed()
+    {
+        return newSpeed;
+    }
 }
