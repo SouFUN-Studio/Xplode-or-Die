@@ -28,7 +28,7 @@ public class LineHandler : MonoBehaviour {
     {
         //if (Input.touchCount > 0 )
         {
-           // Touch touch = Input.GetTouch(0);
+            //Touch touch = Input.GetTouch(0);
 
             if (true)//touch.phase == TouchPhase.Moved)//true
             {
@@ -65,8 +65,8 @@ public class LineHandler : MonoBehaviour {
                     bc.size = new Vector3(0.15f, 0.15f, 0.15f); //(0.1f,0.1f,0.1f)
                 
             }
-
-           /* if (touch.phase == TouchPhase.Ended)//else 
+            /*
+            if (touch.phase == TouchPhase.Ended)//else 
             {
                 onTouch = false;
                 /* Remove Line 
