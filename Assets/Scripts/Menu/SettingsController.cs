@@ -2,7 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 
-public class AudioController : MonoBehaviour
+public class SettingsController : MonoBehaviour
 {
     
     public Button musicButton;
