@@ -26,11 +26,11 @@ public class LineHandler : MonoBehaviour {
 
     void Update()
     {
-        //if (Input.touchCount > 0 )
+        if (Input.touchCount > 0 )
         {
-           // Touch touch = Input.GetTouch(0);
+            Touch touch = Input.GetTouch(0);
 
-            if (true)//touch.phase == TouchPhase.Moved)//true
+            if (touch.phase == TouchPhase.Moved)//true
             {
                 //Create only if count is less than X
                 if (i + 1 > 11)//21
@@ -66,15 +66,15 @@ public class LineHandler : MonoBehaviour {
                 
             }
 
-           /* if (touch.phase == TouchPhase.Ended)//else 
+            if (touch.phase == TouchPhase.Ended)//else 
             {
                 onTouch = false;
-                /* Remove Line 
+                /* Remove Line */
                 lineRenderer.positionCount = 0;
                 //lineRenderer.SetVertexCount(0);
                 i = 0;
 
-                /* Remove Line Colliders 
+                /* Remove Line Colliders */
 
                 BoxCollider2D[] lineColliders = lineGO.GetComponents<BoxCollider2D>();
 
@@ -82,7 +82,7 @@ public class LineHandler : MonoBehaviour {
                 {
                     Destroy(b);
                 }
-            }*/
+            }
         }
     }
 //#endif

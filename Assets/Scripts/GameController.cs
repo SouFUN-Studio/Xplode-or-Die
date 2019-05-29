@@ -88,6 +88,7 @@ public class GameController : MonoBehaviour {
         currentCombo = 0;
         maxCombo = 0;
         speedUp = 0f;
+        StartCoroutine(GameObject.Find("DatabaseManager").GetComponent<Retrieval>().NewRecord(currentScore, "name"));
     }
 
     /*************************************
@@ -286,7 +287,7 @@ public class GameController : MonoBehaviour {
         if (currentScore > HighscoreTable.GetFirstScore())
         {
             newRecordImage.enabled = true;
-            //Debug.Log("new record" + currentScore + ">" + HighscoreTable.GetFirstScore());
+            StartCoroutine(GameObject.Find("DatabaseManager").GetComponent<Retrieval>().NewRecord(currentScore, "name"));
         }
         }
 

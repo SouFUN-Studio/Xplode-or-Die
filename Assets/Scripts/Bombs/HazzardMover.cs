@@ -35,7 +35,7 @@ public class HazzardMover : MonoBehaviour {
         scored = false;
         if (normal)
         {
-            currentSpeed = Mathf.Log(1f + newSpeed, 2f) + 1f;
+            currentSpeed = Mathf.Log(1f + newSpeed, 3f) + 1f;
             life = 1;
         }
         else
