@@ -27,3 +27,7 @@ ExportedObj/
 
 # Unity3D Generated File On Crash Reports
 sysinfo.txt
+
+#SQLITE3
+storage.ide-shm
+storage.ide-wal

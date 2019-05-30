@@ -22,34 +22,78 @@ public class HighscoreTable : MonoBehaviour {
     private Transform entryTemplate;
     private List<Transform> highscoreEntryTransformList;
 
-    private void Awake() {
+    public void ShowScores()
+    {
         entryContainer = transform.Find("Highscore Entry Container");
         entryTemplate = entryContainer.Find("Highscore Entry Template");
-
         entryTemplate.gameObject.SetActive(false);
-        PlayerPrefs.DeleteKey("highscoreTable"); //DELETE SCORE DATABASE    
+
+        //PlayerPrefs.DeleteKey("highscoreTable"); //DELETE SCORE DATABASE    
+
         string jsonString = PlayerPrefs.GetString("highscoreTable");
-        
+        //Debug.Log(PlayerPrefs.GetString("highscoreTable"));
         Highscores highscores = JsonUtility.FromJson<Highscores>(jsonString);
 
-        if (highscores == null) {
-            // There's no stored table, initialize
-            Debug.Log("Initializing table with default values...");
-            AddHighscoreEntry(100);
-            AddHighscoreEntry(200);
-            AddHighscoreEntry(300);
-            AddHighscoreEntry(400);
-            AddHighscoreEntry(500);
-            AddHighscoreEntry(600);
-            // Reload
-            jsonString = PlayerPrefs.GetString("highscoreTable");
-            highscores = JsonUtility.FromJson<Highscores>(jsonString);
+        //Debug.Log(highscores.highscoreEntryList.Count);
+
+        int[] p = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetPlayersScores();
+        if (p == null)
+        {
+            if (highscores == null)
+            {
+                // There's no stored table, initialize
+                Debug.Log("Initializing table with default values...");
+                AddHighscoreEntry(600);
+                AddHighscoreEntry(500);
+                AddHighscoreEntry(400);
+                AddHighscoreEntry(300);
+                AddHighscoreEntry(200);
+                AddHighscoreEntry(100);
+                // Reload
+                jsonString = PlayerPrefs.GetString("highscoreTable");
+                highscores = JsonUtility.FromJson<Highscores>(jsonString);
+            }
+        }
+        else
+        {
+            if (p.Length == 0)
+            {
+                if (highscores == null)
+                {
+                    // There's no stored table, initialize
+                    Debug.Log("Initializing table with default values...");
+                    AddHighscoreEntry(600);
+                    AddHighscoreEntry(500);
+                    AddHighscoreEntry(400);
+                    AddHighscoreEntry(300);
+                    AddHighscoreEntry(200);
+                    AddHighscoreEntry(100);
+                    // Reload
+                    jsonString = PlayerPrefs.GetString("highscoreTable");
+                    highscores = JsonUtility.FromJson<Highscores>(jsonString);
+                }
+
+                //Debug.Log(p);
+                {
+                    PlayerPrefs.DeleteKey("highscoreTable"); //DELETE SCORE DATABASE    
+                                                             // There's no stored table, initialize
+                    Debug.Log("Score from server recived....");
+                    foreach (int s in p)
+                    {
+                        AddHighscoreEntry(s);
+                    }
+                    // Reload
+                    jsonString = PlayerPrefs.GetString("highscoreTable");
+                    highscores = JsonUtility.FromJson<Highscores>(jsonString);
+                }
+            }
         }
 
     }
 
     public void UpdateScore()
     {
+        ShowScores();
         entryContainer = transform.Find("Highscore Entry Container");
         entryTemplate = entryContainer.Find("Highscore Entry Template");
 
@@ -187,6 +231,7 @@ public class HighscoreTable : MonoBehaviour {
 
     public int GetFirstScore()
     {
+        Debug.Log(PlayerPrefs.GetString("highscoreTable"));
         Highscores highscores = JsonUtility.FromJson<Highscores>(PlayerPrefs.GetString("highscoreTable"));
         highscores = SortScoreList(highscores);
 
