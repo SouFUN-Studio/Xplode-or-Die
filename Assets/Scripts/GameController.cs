@@ -108,7 +108,7 @@ public class GameController : MonoBehaviour {
         {
             SetSpeedUp(0.0f);
             NewRecord();
-            HighscoreTable.AddHighscoreEntry(currentScore);
+            //HighscoreTable.AddHighscoreEntry(currentScore);
             GameObject.Find("AdsController").GetComponent<UnityAdsPlacement>().ShowAd();
             GameOver.enabled = true;
             StopHazzardSpawn();
@@ -283,13 +283,18 @@ public class GameController : MonoBehaviour {
 
     public void NewRecord()
     {
-        Debug.Log(currentScore);
-        if (currentScore > HighscoreTable.GetFirstScore())
+        Debug.Log("Current score: " + currentScore);
+        int storedScore = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetScore();
+        Debug.Log("Stores score: " + storedScore);
+        if (currentScore > storedScore)
         {
+            Debug.Log("New Record ...");
             newRecordImage.enabled = true;
-            StartCoroutine(GameObject.Find("DatabaseManager").GetComponent<Retrieval>().NewRecord(currentScore, "name"));
+            //HighscoreTable.AddHighscoreEntry(currentScore);
+            GameObject.Find("DatabaseManager").GetComponent<Retrieval>().UploadMyScore(currentScore);
+            Debug.Log("New Score: " + GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetScore());
         }
-        }
+    }
 
 
 
