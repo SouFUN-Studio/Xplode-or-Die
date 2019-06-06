@@ -22,34 +22,42 @@ public class HighscoreTable : MonoBehaviour {
     private Transform entryTemplate;
     private List<Transform> highscoreEntryTransformList;
 
-    private void Awake() {
+    public void ShowScores()
+    {
+        GameObject.Find("DatabaseManager").GetComponent<Retrieval>().PostRequest();
         entryContainer = transform.Find("Highscore Entry Container");
         entryTemplate = entryContainer.Find("Highscore Entry Template");
-
         entryTemplate.gameObject.SetActive(false);
-        PlayerPrefs.DeleteKey("highscoreTable"); //DELETE SCORE DATABASE    
+        LoadStoredPlayersToHighscores();
         string jsonString = PlayerPrefs.GetString("highscoreTable");
-        
+        //Debug.Log(PlayerPrefs.GetString("highscoreTable"));
         Highscores highscores = JsonUtility.FromJson<Highscores>(jsonString);
 
-        if (highscores == null) {
-            // There's no stored table, initialize
-            Debug.Log("Initializing table with default values...");
-            AddHighscoreEntry(100);
-            AddHighscoreEntry(200);
-            AddHighscoreEntry(300);
-            AddHighscoreEntry(400);
-            AddHighscoreEntry(500);
-            AddHighscoreEntry(600);
-            // Reload
-            jsonString = PlayerPrefs.GetString("highscoreTable");
-            highscores = JsonUtility.FromJson<Highscores>(jsonString);
-        }
+            if (highscores == null)
+            {
+                // There's no stored table, initialize
+                Debug.Log("Initializing table with default values...");
+                AddHighscoreEntry(600);
+                AddHighscoreEntry(500);
+                AddHighscoreEntry(400);
+                AddHighscoreEntry(300);
+                AddHighscoreEntry(200);
+                AddHighscoreEntry(100);
+                // Reload
+                jsonString = PlayerPrefs.GetString("highscoreTable");
+                highscores = JsonUtility.FromJson<Highscores>(jsonString);
+            }
+            else
+            {
+                jsonString = PlayerPrefs.GetString("highscoreTable");
+                highscores = JsonUtility.FromJson<Highscores>(jsonString);
+            }
 
     }
 
     public void UpdateScore()
     {
+        ShowScores();
         entryContainer = transform.Find("Highscore Entry Container");
         entryTemplate = entryContainer.Find("Highscore Entry Template");
 
@@ -187,12 +195,26 @@ public class HighscoreTable : MonoBehaviour {
 
     public int GetFirstScore()
     {
+        Debug.Log(PlayerPrefs.GetString("highscoreTable"));
         Highscores highscores = JsonUtility.FromJson<Highscores>(PlayerPrefs.GetString("highscoreTable"));
         highscores = SortScoreList(highscores);
 
         return highscores.highscoreEntryList[0].score;
     }
+    public void LoadStoredPlayersToHighscores()
+    {
+        int[] p = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetPlayersScores();
+        PlayerPrefs.DeleteKey("highscoreTable"); //DELETE SCORE DATABASE    
 
+        string jsonString = PlayerPrefs.GetString("highscoreTable");
+        //Debug.Log(PlayerPrefs.GetString("highscoreTable"));
+        Highscores highscores = JsonUtility.FromJson<Highscores>(jsonString);
+        foreach(int score in p)
+        {
+            AddHighscoreEntry(score);
+        }
+
+    }
     private class Highscores {
         public List<HighscoreEntry> highscoreEntryList;
     }

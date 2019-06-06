@@ -33,7 +33,7 @@ public class SettingsController : MonoBehaviour
         string jsonString = PlayerPrefs.GetString("playerSettings");
 
         PlayerSettings playerSettings = JsonUtility.FromJson<PlayerSettings>(jsonString);
-        Debug.Log(playerSettings.music + " "+ playerSettings.FX);
+        //Debug.Log(playerSettings.music + " "+ playerSettings.FX);
         if (playerSettings.music)
         {
             musicButton.GetComponent<Image>().sprite = soundOn;
