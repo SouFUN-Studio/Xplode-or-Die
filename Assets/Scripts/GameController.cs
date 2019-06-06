@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+//por que unity no puede ejecutar
 
 
 public class GameController : MonoBehaviour {
@@ -69,7 +70,7 @@ public class GameController : MonoBehaviour {
     private int currentCombo;
     private int combo;
     private int maxCombo;
-
+    private readonly int scrsbsttt = 999999999;
     private float speedUp;
 
     //   private Coroutine bombsCoroutine;
@@ -98,7 +99,7 @@ public class GameController : MonoBehaviour {
      ************************************/
     private void Update()
     {
-        textHUD.text = "Score: " + score.ToString(); //+ speedUp.ToString();
+        textHUD.text = "Score: " + (score); //+ speedUp.ToString();
         comboObject.GetComponentInChildren<TextMesh>().text = combo.ToString();
         currentScore = score;
         currentCombo = combo;
@@ -114,7 +115,7 @@ public class GameController : MonoBehaviour {
             StopHazzardSpawn();
             RSTS.ReSizeCollider();
             highscore.text = HighscoreTable.GetFirstScore().ToString();
-            gameoverScore.text = currentScore.ToString();
+            gameoverScore.text = "" + (currentScore);
             gameoverCombo.text = maxCombo.ToString();
             ResetGame();
             DBC.SetLifes(3);

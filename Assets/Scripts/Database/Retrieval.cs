@@ -41,13 +41,14 @@ public class Retrieval : MonoBehaviour
 
     public void PostRequest()
     {
-        IEnumerator POST = PostRequest(score);
+        IEnumerator POST = PostRequest(highscore_url);
         StartCoroutine(POST);
-        StopCoroutine(POST);
+        //StopCoroutine(POST);
     }
 
-    public IEnumerator PostRequest(int score)
+    public IEnumerator PostRequest(string url)
     {
+        Debug.Log("New Score to be stored: " + score);
         // Create a form object for sending high score data to the server
         WWWForm form = new WWWForm();
 
@@ -64,18 +65,19 @@ public class Retrieval : MonoBehaviour
         form.AddField("score", score);
 
         // Create a download object
-        download = UnityWebRequest.Post(highscore_url, form);
-        Debug.Log("Response for POST method " + download);
+        download = UnityWebRequest.Post(url, form);
+        
         // Wait until the download is done
         yield return download.SendWebRequest();
-
+        //Debug.Log("Response for POST method " + download.downloadHandler.text);
         if (download.isNetworkError || download.isHttpError)
         {
             conected = false;
-            print("Error downloading: " + download.error);
+    
         }
         else
         {
+            Debug.Log("conected");
             conected = true;
             if (id == -1)
             {
@@ -147,7 +149,7 @@ public class Retrieval : MonoBehaviour
         //Create my new info
         Debug.Log("Loading Player info...");
         //Load my info
-        //PlayerPrefs.DeleteKey("playerInfoTable"); //DELETE SCORE DATABASE    
+        PlayerPrefs.DeleteKey("playerInfoTable"); //DELETE SCORE DATABASE    
         string playerInfo = PlayerPrefs.GetString("playerInfoTable");
         myInfo = JsonUtility.FromJson<PlayerEntry>(playerInfo);
         if (myInfo == null)
