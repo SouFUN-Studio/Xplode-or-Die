@@ -30,6 +30,8 @@ public class Retrieval : MonoBehaviour
     {
         LoadMyInfo();
         PostRequest();
+        //PlayerPrefs.DeleteKey("playersInfoTable"); //DELETE Players DATABASE    
+
         //GetRequest();
     }
 
@@ -149,7 +151,7 @@ public class Retrieval : MonoBehaviour
         //Create my new info
         Debug.Log("Loading Player info...");
         //Load my info
-        PlayerPrefs.DeleteKey("playerInfoTable"); //DELETE SCORE DATABASE    
+        //PlayerPrefs.DeleteKey("playerInfoTable"); //DELETE SCORE DATABASE    
         string playerInfo = PlayerPrefs.GetString("playerInfoTable");
         myInfo = JsonUtility.FromJson<PlayerEntry>(playerInfo);
         if (myInfo == null)

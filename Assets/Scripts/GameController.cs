@@ -291,7 +291,7 @@ public class GameController : MonoBehaviour {
         {
             Debug.Log("New Record ...");
             newRecordImage.enabled = true;
-            //HighscoreTable.AddHighscoreEntry(currentScore);
+            HighscoreTable.AddHighscoreEntry(currentScore);
             GameObject.Find("DatabaseManager").GetComponent<Retrieval>().UploadMyScore(currentScore);
             Debug.Log("New Score: " + GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetScore());
         }
