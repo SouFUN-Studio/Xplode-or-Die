@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.UI;
+using TMPro;
 //por que unity no puede ejecutar
 
 
@@ -43,13 +44,13 @@ public class GameController : MonoBehaviour {
 	public Quaternion spawnRotation;
 
     [Header("Current score in playmode")]
-    public Text textHUD;
+    public TextMeshProUGUI textHUD;
 
     [Header("Gameover text's")]
-    public Text gameoverScore;
-    public Text highscore;
+    public TextMeshProUGUI gameoverScore;
+    public TextMeshProUGUI highscore;
 
-    public Text gameoverCombo;
+    public TextMeshProUGUI gameoverCombo;
 
     [Header("Animation State")]
     public int count;
@@ -99,7 +100,7 @@ public class GameController : MonoBehaviour {
      ************************************/
     private void Update()
     {
-        textHUD.text = "Score: " + (score); //+ speedUp.ToString();
+        textHUD.SetText("Score: " + (score)); //+ speedUp.ToString();
         comboObject.GetComponentInChildren<TextMesh>().text = combo.ToString();
         currentScore = score;
         currentCombo = combo;
@@ -114,9 +115,9 @@ public class GameController : MonoBehaviour {
             GameOver.enabled = true;
             StopHazzardSpawn();
             RSTS.ReSizeCollider();
-            highscore.text = HighscoreTable.GetFirstScore().ToString();
-            gameoverScore.text = "" + (currentScore);
-            gameoverCombo.text = maxCombo.ToString();
+            highscore.SetText(HighscoreTable.GetFirstScore().ToString());
+            gameoverScore.SetText("" + (currentScore));
+            gameoverCombo.SetText(maxCombo.ToString());
             ResetGame();
             DBC.SetLifes(3);
         }

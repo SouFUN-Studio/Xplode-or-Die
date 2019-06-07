@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using CodeMonkey.Utils;
+using TMPro;
 
 public class HighscoreTable : MonoBehaviour {
 
@@ -112,13 +113,13 @@ public class HighscoreTable : MonoBehaviour {
         case 3: rankString = "3rd"; break;
         }
 
-        entryTransform.Find("posText").GetComponent<Text>().text = rankString;
+        entryTransform.Find("posText").GetComponent<TextMeshProUGUI>().SetText(rankString);
 
         int score = highscoreEntry.score;
 
         //string score = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetDownload().downloadHandler.text;
 
-        entryTransform.Find("scoreText").GetComponent<Text>().text = score.ToString();
+        entryTransform.Find("scoreText").GetComponent<TextMeshProUGUI>().SetText(score.ToString());
 
         //string name = highscoreEntry.name;
         //entryTransform.Find("nameText").GetComponent<Text>().text = name;
