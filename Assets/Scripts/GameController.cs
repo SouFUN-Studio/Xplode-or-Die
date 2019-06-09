@@ -26,7 +26,7 @@ public class GameController : MonoBehaviour {
 
     public Image newRecordImage;
 
-    public HighscoreTable HighscoreTable;
+    public HighscoreTable highscoreTable;
     //combo NOT CREATED YET
     public GameObject comboObject;
     [Header("Gelatux")]
@@ -115,7 +115,7 @@ public class GameController : MonoBehaviour {
             GameOver.enabled = true;
             StopHazzardSpawn();
             RSTS.ReSizeCollider();
-            highscore.SetText(HighscoreTable.GetFirstScore().ToString());
+            highscore.SetText(highscoreTable.GetFirstScore().ToString());
             gameoverScore.SetText("" + (currentScore));
             gameoverCombo.SetText(maxCombo.ToString());
             ResetGame();
@@ -292,7 +292,7 @@ public class GameController : MonoBehaviour {
         {
             Debug.Log("New Record ...");
             newRecordImage.enabled = true;
-            HighscoreTable.AddHighscoreEntry(currentScore);
+            highscoreTable.AddHighscoreEntry(currentScore);
             GameObject.Find("DatabaseManager").GetComponent<Retrieval>().UploadMyScore(currentScore);
             Debug.Log("New Score: " + GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetScore());
         }

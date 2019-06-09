@@ -23,19 +23,24 @@ public class HighscoreTable : MonoBehaviour {
     private Transform entryTemplate;
     private List<Transform> highscoreEntryTransformList;
 
+    private Transform entryPlayerTemplate;
+    public ScrollRect scrollRect;
     public void ShowScores()
     {
+        
         //PlayerPrefs.DeleteKey("highscoreTable"); //DELETE Players DATABASE    
         GameObject.Find("DatabaseManager").GetComponent<Retrieval>().PostRequest();
         entryContainer = transform.Find("Highscore Entry Container");
         entryTemplate = entryContainer.Find("Highscore Entry Template");
+        //ASDASDSADASDASDSADASDASDASDASDASDASD
+        entryPlayerTemplate = GameObject.Find("Player Entry Template").transform;
         entryTemplate.gameObject.SetActive(false);
+        Debug.Log("LoadScores...");
         LoadStoredPlayersToHighscores();
         string jsonString = PlayerPrefs.GetString("highscoreTable");
         //Debug.Log(PlayerPrefs.GetString("highscoreTable"));
         Highscores highscores = JsonUtility.FromJson<Highscores>(jsonString);
         bool conected = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetConected();
-
 
         if (highscores == null)
         {
@@ -60,6 +65,8 @@ public class HighscoreTable : MonoBehaviour {
 
     public void UpdateScore()
     {
+        
+        DestroyTemplates();
         ShowScores();
         entryContainer = transform.Find("Highscore Entry Container");
         entryTemplate = entryContainer.Find("Highscore Entry Template");
@@ -72,17 +79,28 @@ public class HighscoreTable : MonoBehaviour {
         highscores = SortScoreList(highscores);
 
         highscoreEntryTransformList = new List<Transform>();
+
+        HighscoreEntry playerScore = new HighscoreEntry()
+        {
+            score = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetScore()
+        };
+        entryContainer.GetComponent<RectTransform>().sizeDelta = new Vector2 (100, 50 + (50*highscores.highscoreEntryList.Count));
         int count = 0;
+        int startInstantiate = highscores.highscoreEntryList.Count;
         foreach (HighscoreEntry highscoreEntry in highscores.highscoreEntryList)
         {
-            if(count >= 15)
+            if (count >= 99)
             {
                 break;
-            }else
-                CreateHighscoreEntryTransform(highscores.highscoreEntryList[count], entryContainer, highscoreEntryTransformList, false);
-            count++;
+            }
+            else
+            {
+                CreateHighscoreEntryTransform(highscores.highscoreEntryList[count], entryContainer, highscoreEntryTransformList, playerScore.score, startInstantiate);
+                count++;
+            }
         }
-        
+            entryPlayerTemplate.Find("scoreText").GetComponent<TextMeshProUGUI>().SetText(playerScore.score.ToString());
+        scrollRect.verticalNormalizedPosition = 1.0f;
     }
 
     public void DestroyTemplates()
@@ -94,12 +112,13 @@ public class HighscoreTable : MonoBehaviour {
         }
     }
 
-    private void CreateHighscoreEntryTransform(HighscoreEntry highscoreEntry, Transform container, List<Transform> transformList, bool player) {
-        float templateHeight = 51f;
+    private void CreateHighscoreEntryTransform(HighscoreEntry highscoreEntry, Transform container, List<Transform> transformList, int playerScore, int startInstansiate) {
+        float templateHeight = 50f;
         Transform entryTransform = Instantiate(entryTemplate, container);
+        Debug.Log("Container Instanciado");
         entryTransform.tag = "TemplateCopy";
         RectTransform entryRectTransform = entryTransform.GetComponent<RectTransform>();
-        entryRectTransform.anchoredPosition = new Vector2(0, -templateHeight * transformList.Count);
+        entryRectTransform.anchoredPosition = new Vector2(0,((startInstansiate * 50)/2 -25) -templateHeight * transformList.Count);
         entryTransform.gameObject.SetActive(true);
 
         int rank = transformList.Count + 1;
@@ -121,18 +140,12 @@ public class HighscoreTable : MonoBehaviour {
 
         entryTransform.Find("scoreText").GetComponent<TextMeshProUGUI>().SetText(score.ToString());
 
+
         //string name = highscoreEntry.name;
         //entryTransform.Find("nameText").GetComponent<Text>().text = name;
 
         // Set background visible odds and evens, easier to read
-           //entryTransform.Find("Background").gameObject.SetActive(rank % 2 == 1);
-        
-        // Highlight First
-        if (player) {
-            entryTransform.Find("posText").GetComponent<Text>().color = Color.green;
-            entryTransform.Find("scoreText").GetComponent<Text>().color = Color.green;
-         //   entryTransform.Find("nameText").GetComponent<Text>().color = Color.green;
-        }
+           //entryTransform.Find("Background").gameObject.SetActive(rank % 2 == 1);        
 
         // Set tropy
         switch (rank) {
@@ -152,7 +165,13 @@ public class HighscoreTable : MonoBehaviour {
         }
 
         transformList.Add(entryTransform);
-    }
+
+        if (playerScore == score)
+        {
+            entryPlayerTemplate.Find("posText").GetComponent<TextMeshProUGUI>().SetText(rankString);
+        }
+
+        }
 
     public void AddHighscoreEntry(int score) {
         // Create HighscoreEntry
