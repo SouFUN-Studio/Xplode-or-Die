@@ -25,12 +25,14 @@ public class LineHandler : MonoBehaviour {
     }
 
     void Update()
-    {
+    {//Startdoc
+        /*
         if (Input.touchCount > 0 )
         {
             Touch touch = Input.GetTouch(0);
-
-            if (touch.phase == TouchPhase.Moved)//true
+            //ENDDOC
+            */
+            if(true)// (touch.phase == TouchPhase.Moved)//true
             {
                 //Create only if count is less than X
                 if (i + 1 > 11)//21
@@ -66,7 +68,7 @@ public class LineHandler : MonoBehaviour {
                 
             }
             
-            if (touch.phase == TouchPhase.Ended)//else 
+            else//if(touch.phase == TouchPhase.Ended)//else 
             {
                 onTouch = false;
                 /* Remove Line */
@@ -83,7 +85,7 @@ public class LineHandler : MonoBehaviour {
                     Destroy(b);
                 }
             }
-        }
+        //}//DOC{|
     }
 //#endif
 

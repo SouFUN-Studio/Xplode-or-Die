@@ -48,7 +48,7 @@ public class ResizeSpriteToScreen : MonoBehaviour {
     }
     public void ReSizeCollider()
     {
-        GetComponent<BoxCollider2D>().offset.Set(0.0f, 0.0f);
-        GetComponent<BoxCollider2D>().size.Set(colliderSize.x, 11.0f);
+        //GetComponent<BoxCollider2D>().offset.Set(0.0f, 0.0f);
+        //GetComponent<BoxCollider2D>().size.Set(colliderSize.x, 11.0f);
     }
 }

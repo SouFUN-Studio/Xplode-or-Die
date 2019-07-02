@@ -4,35 +4,48 @@ using UnityEngine.UI;
 
 public class HelpMenu : MonoBehaviour {
 
-    public Button nextButton;
-    public Button backButton;
-
-    public GameObject imageNorm;
-    public GameObject imageInv;
-    public GameObject imageMult;
-
-
+    public GameObject[] images;
+    public GameObject mask;
+    public GameObject helpMenu;
     public void NextImage()
     {
-        if (imageNorm.activeSelf)
+        if (images[0].activeSelf)
         {
-            imageInv.SetActive(true);
-            imageNorm.SetActive(false);
+            images[1].SetActive(true);
+            images[0].SetActive(false);
             //backButton.GetComponent<Image>().enabled = true;
         }
         else
         {
-            if (imageInv.activeSelf)
+            if (images[1].activeSelf)
             {
-                imageMult.SetActive(true);
-                imageInv.SetActive(false);
+                images[2].SetActive(true);
+                images[1].SetActive(false);
               //nextButton.GetComponent<Image>().enabled = false;
             }
             else
             {
-                ResetHelpMenu();
-                GameObject.Find("Help Menu Canvas").GetComponent<Canvas>().enabled = false;
-                GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().enabled = true;
+                if (images[2].activeSelf)
+                {
+                    images[3].SetActive(true);
+                    images[2].SetActive(false);
+                    //nextButton.GetComponent<Image>().enabled = false;
+                }
+                else
+                {
+                    if (images[3].activeSelf)
+                    {
+                        images[4].SetActive(true);
+                        images[3].SetActive(false);
+                        //nextButton.GetComponent<Image>().enabled = false;
+                    }
+                    else
+                    {
+                        mask.SetActive(false);
+                        helpMenu.GetComponent<MenuMover>().SetActive(false);
+                    }
+                }
+                
             }
         }
     }
@@ -40,27 +53,12 @@ public class HelpMenu : MonoBehaviour {
 
     public void ResetHelpMenu()
     {
-        imageNorm.SetActive(true);
-        imageInv.SetActive(false);
-        imageMult.SetActive(false);
-    }
-    /*CODE DESPRECIATED
-    public void BackImage()
-    {
-        if (imageInv.activeSelf)
+        foreach(GameObject im in images)
         {
-            imageNorm.SetActive(true);
-            imageInv.SetActive(false);
-            backButton.GetComponent<Image>().enabled = false;
-        }else
-        {
-            if (imageMult.activeSelf)
-            {
-                imageInv.SetActive(true);
-                imageMult.SetActive(false);
-                nextButton.GetComponent<Image>().enabled = true;
-            }
+            im.SetActive(false);
         }
-    }*/
+        images[0].SetActive(true);
+        
+    }
 
 }

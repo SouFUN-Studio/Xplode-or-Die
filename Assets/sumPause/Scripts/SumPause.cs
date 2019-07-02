@@ -8,7 +8,7 @@ public class SumPause : MonoBehaviour {
     // Event managers
     public delegate void PauseAction(bool paused);
     public static event PauseAction pauseEvent;
-
+    
     // Variables set via inspector
     [SerializeField]
     bool useEvent = false, detectEscapeKey = true;
@@ -70,7 +70,7 @@ public class SumPause : MonoBehaviour {
     public void TogglePause () {
         Status = !Status; // Flip current status
     }
-
+    
     /// <summary>Checks if all links are properly connected</summary>
     /// <returns>False means links are missing</returns>
     static bool CheckLinks () {
@@ -82,6 +82,7 @@ public class SumPause : MonoBehaviour {
         if(status) {
             // What to do when paused
             Time.timeScale = 0; // Set game speed to 0
+            
         }
         else {
             // What to do when unpaused

@@ -2,6 +2,7 @@
 using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class Retrieval : MonoBehaviour
 {
@@ -12,13 +13,16 @@ public class Retrieval : MonoBehaviour
      ***************************************/ 
     readonly string highscore_url = "http://www.soufunstudio.com/data.php"; //POST REQUEST PAGE
     readonly string hignscore_json = "http://www.soufunstudio.com/datajson.php"; //GET REQUEST PAGE
+    public GameObject changeNameButton;
     private int id = -1;
     private readonly string game = "XorD";
-    private string playName = "Player 1";
+    private string player = "Guest";
     private int score = -1;
     private PlayerEntry myInfo;
     private Players players;
+    private int sprite;
     private bool conected=false;
+    private bool nameSaved = false;
     UnityWebRequest download;
 
     /****************************************
@@ -28,11 +32,16 @@ public class Retrieval : MonoBehaviour
      ***************************************/
     void Awake()
     {
+        Time.timeScale = 0; // Set game speed to 0
+        Time.timeScale = 1;
         LoadMyInfo();
         PostRequest();
         //PlayerPrefs.DeleteKey("playersInfoTable"); //DELETE Players DATABASE    
-
         //GetRequest();
+        if (nameSaved)
+        {
+            Destroy(changeNameButton);
+        }
     }
 
     /****************************************
@@ -50,7 +59,8 @@ public class Retrieval : MonoBehaviour
 
     public IEnumerator PostRequest(string url)
     {
-        Debug.Log("New Score to be stored: " + score);
+        //Debug.Log("New Score to be stored: " + score);
+        //Debug.Log("New Name to be Stores: " + player);
         // Create a form object for sending high score data to the server
         WWWForm form = new WWWForm();
 
@@ -61,14 +71,17 @@ public class Retrieval : MonoBehaviour
         form.AddField("game", game);
 
         // The name of the player submitting the scores
-        form.AddField("playerName", playName);
+        form.AddField("player", player);
 
         // The score
         form.AddField("score", score);
 
+        //The Sprite number
+        form.AddField("sprite", sprite);
+
         // Create a download object
         download = UnityWebRequest.Post(url, form);
-        
+        //Debug.Log("Echo: " + download.downloadHandler.text);
         // Wait until the download is done
         yield return download.SendWebRequest();
         //Debug.Log("Response for POST method " + download.downloadHandler.text);
@@ -79,15 +92,15 @@ public class Retrieval : MonoBehaviour
         }
         else
         {
-            Debug.Log("conected");
+            //Debug.Log("conected");
             conected = true;
             if (id == -1)
             {
                 // show the id
-                Debug.Log("id recived: " + download.downloadHandler.text);
+                //Debug.Log("id recived: " + download.downloadHandler.text);
                 //Debug.Log(download.downloadHandler.text);
                 SetID(System.Convert.ToInt32(download.downloadHandler.text));
-                Debug.Log("Id converted!");
+                //Debug.Log("Id converted!");
                 UploadMyID(id);
             }
             GetRequest();
@@ -122,20 +135,20 @@ public class Retrieval : MonoBehaviour
             if (webRequest.isNetworkError)
             {
                 conected = false;
-                Debug.Log(pages[page] + ": Error: " + webRequest.error);
+                //Debug.Log(pages[page] + ": Error: " + webRequest.error);
             }
             else
             {
                 conected = true;
-                Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
+                //Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
                 //TextAsset asset = webRequest.downloadHandler.text as TextAsset;
                 string playersInfo = PlayerPrefs.GetString("playersInfoTable");
-                PlayerPrefs.DeleteKey("playersInfoTable"); //DELETE Players DATABASE    
+                //PlayerPrefs.DeleteKey("playersInfoTable"); //DELETE Players DATABASE    
                 players = JsonUtility.FromJson<Players>(webRequest.downloadHandler.text.ToString());
                 string json = JsonUtility.ToJson(players);
                 PlayerPrefs.SetString("playersInfoTable", json);
                 PlayerPrefs.Save();
-                Debug.Log("Players from database stored... :D");
+                //Debug.Log("Players from database stored... :D");
             }
         }
     }
@@ -149,21 +162,22 @@ public class Retrieval : MonoBehaviour
     public void LoadMyInfo()
     {
         //Create my new info
-        Debug.Log("Loading Player info...");
+        //Debug.Log("Loading Player info...");
         //Load my info
         //PlayerPrefs.DeleteKey("playerInfoTable"); //DELETE SCORE DATABASE    
         string playerInfo = PlayerPrefs.GetString("playerInfoTable");
         myInfo = JsonUtility.FromJson<PlayerEntry>(playerInfo);
         if (myInfo == null)
         {
-            PlayerEntry myNewInfo = new PlayerEntry { id = this.id, game = this.game, player = this.playName, score = this.score };
-            Debug.Log("No data founded...");
-            Debug.Log("Creating new Player info...");
+            PlayerEntry myNewInfo = new PlayerEntry { id = this.id, game = this.game, player = this.player, score = this.score, nameSaved = this.nameSaved };
+            //Debug.Log("No data founded...");
+            //Debug.Log("Creating new Player info...");
             // There's no stored table, initialize
             myInfo = myNewInfo;//new PlayerEntry { id = this.id, game = "XorD", player = "NewPlayer", score = this.score };
-            Debug.Log("Info created...");
-            Debug.Log("[ My Id: " + myInfo.id + "\n My score: " + myInfo.score + " ]" );
-            Debug.Log("My Info loaded...");
+            //Debug.Log("Info created...");
+            //Debug.Log("[ My Id: " + myInfo.id + "\n My score: " + myInfo.score + " ]" );
+            //Debug.Log("My Info loaded...");
+            
             string json = JsonUtility.ToJson(myInfo);
             PlayerPrefs.SetString("playerInfoTable", json);
             PlayerPrefs.Save();
@@ -172,10 +186,12 @@ public class Retrieval : MonoBehaviour
         else
         {
             this.id = myInfo.id;
-            this.playName = myInfo.player;
+            this.player = myInfo.player;
             this.score = myInfo.score;
-            Debug.Log("[ My Id: " + myInfo.id + "\n My score: " + myInfo.score + " ]");
-            Debug.Log("My Info loaded...");
+            this.nameSaved = myInfo.nameSaved;
+            Debug.Log("NameSaved From data: " + nameSaved);
+            //Debug.Log("[ My Id: " + myInfo.id + "\n My score: " + myInfo.score + " ]");
+            //Debug.Log("My Info loaded...");
         }
     }
 
@@ -198,6 +214,23 @@ public class Retrieval : MonoBehaviour
         if(playerInfo == null)
         this.myInfo = JsonUtility.FromJson<PlayerEntry>(playerInfo);
         this.myInfo.id = id;
+        this.myInfo.player = "Guest" + id;
+        // Save updated Player Info
+        string json = JsonUtility.ToJson(myInfo);
+        PlayerPrefs.SetString("playerInfoTable", json);
+        PlayerPrefs.Save();
+    }
+
+    public void UploadMyName(string player)
+    {
+        Setplayer(player);
+        SetNameSaved(true);
+        string playerInfo = PlayerPrefs.GetString("playerInfoTable");
+        if (playerInfo == null)
+            this.myInfo = JsonUtility.FromJson<PlayerEntry>(playerInfo);
+        myInfo.player = player;
+        Debug.Log("NameSaved: " + nameSaved);
+        myInfo.nameSaved = nameSaved;
         // Save updated Player Info
         string json = JsonUtility.ToJson(myInfo);
         PlayerPrefs.SetString("playerInfoTable", json);
@@ -209,10 +242,13 @@ public class Retrieval : MonoBehaviour
      *             GET AND SET              *
      *                                      *
      ***************************************/
-
+     public void SetNameSaved(bool nameSaved)
+    {
+        this.nameSaved = nameSaved;
+    }
     public void SetID(int id)
     {
-        Debug.Log("ID converted to int: [value]: " + id);
+        //Debug.Log("ID converted to int: [value]: " + id);
         this.id = id;
     }
     public int GetScore()
@@ -222,6 +258,30 @@ public class Retrieval : MonoBehaviour
     public bool GetConected()
     {
         return conected;
+    }
+
+    public string GetPlayerName()
+    {
+        return player;
+    }
+
+    public int[] GetPlayersIDs()
+    {
+        string playersInfo = PlayerPrefs.GetString("playersInfoTable");
+        players = JsonUtility.FromJson<Players>(playersInfo);
+
+        if (players != null)
+        {
+            int size = players.PlayerList.Count;
+            int[] IDs = new int[size];
+            for (int i = 0; i < size; i++)
+            {
+                IDs[i] = players.PlayerList[i].id;
+                //Debug.Log("Scores: "+players.PlayerList[i].score);
+            }
+            return IDs;
+        }
+        return null;
     }
 
     public int[] GetPlayersScores()
@@ -242,10 +302,70 @@ public class Retrieval : MonoBehaviour
         }
         return null;
     }
+    public string[] GetPlayersName()
+    {
+        string playersInfo = PlayerPrefs.GetString("playersInfoTable");
+        players = JsonUtility.FromJson<Players>(playersInfo);
+
+        if (players != null)
+        {
+            int size = players.PlayerList.Count;
+            string[] names = new string[size];
+            for (int i = 0; i < size; i++)
+            {
+                names[i] = players.PlayerList[i].player;
+                //Debug.Log("Scores: "+players.PlayerList[i].score);
+            }
+            return names;
+        }
+        return null;
+    }
+    public int[] GetPlayersImg()
+    {
+        string playersInfo = PlayerPrefs.GetString("playersInfoTable");
+        players = JsonUtility.FromJson<Players>(playersInfo);
+
+        if (players != null)
+        {
+            int size = players.PlayerList.Count;
+            int[] img = new int[size];
+            for (int i = 0; i < size; i++)
+            {
+                img[i] = players.PlayerList[i].profileFB;
+                //Debug.Log("Scores: "+players.PlayerList[i].score);
+            }
+            return img;
+        }
+        return null;
+    }
 
     public int GetPlayerScore()
     {
         return score;
+    }
+
+    public void SetProfilePhoto(int profilePhoto)
+    {
+        myInfo.profileFB = profilePhoto;
+    }
+
+    public int GetProfilePhoto()
+    {
+        return myInfo.profileFB;
+    }
+
+    public void Setplayer(string player)
+    {
+        this.player=player;
+    }
+    public string Getplayer()
+    {
+        return player;
+    }
+
+    public int GetID()
+    {
+        return id;
     }
 
     /****************************************
@@ -263,7 +383,9 @@ public class Retrieval : MonoBehaviour
     {
         public int id = -1;
         public string game;
+        public int profileFB;
         public string player;
         public int score;
+        public bool nameSaved;
     }
 }

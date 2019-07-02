@@ -18,7 +18,8 @@ public class Movement : MonoBehaviour {
     //Variables for wait time
     private float currentTime = 0.0f;
     private float step = 1f;
-
+    private float minVol = 0.110f;
+    private float maxVol = 0.350f;
 
     private int count;
 	void Start () {
@@ -28,6 +29,8 @@ public class Movement : MonoBehaviour {
         myWidth = this.GetComponent<SpriteRenderer>().bounds.extents.x;
         myAnimator = this.GetComponent<Animator>();
         count = FindObjectOfType<GameController>().GetCount();
+        GetComponent<AudioSource>().loop = true;
+        GetComponent<AudioSource>().enabled = false;
     //Initialization of wait time
     StartCoroutine(TimerRoutine());
 	}
@@ -66,11 +69,11 @@ public class Movement : MonoBehaviour {
             switch (random)
             {
                 case 1:
-                    speedUp(rbIsGrounded);
+                    SpeedUp(rbIsGrounded);
                     currentTime = 0.0f;
                     break;
                 case 2:
-                    speedDown();
+                    SpeedDown();
                     currentTime = 0.0f;
                     break;
             }
@@ -85,21 +88,24 @@ public class Movement : MonoBehaviour {
         }
     }
     
-    public void speedUp(bool grounded)
+    public void SpeedUp(bool grounded)
     {
         //If rigidbody is grounded, can walk
         if (grounded)
         {
+            float volume = Random.Range(minVol, maxVol);
             speed = 1.0f;
             jumpForce = 1.0f;
+            GetComponent<AudioSource>().volume = volume;
         }
         
     }
     
-    public void speedDown()
+    public void SpeedDown()
     {
         speed = 0.0f;
         jumpForce = 0.0f;
+        GetComponent<AudioSource>().volume = 0.0f;
     }
 
     //Wait time method

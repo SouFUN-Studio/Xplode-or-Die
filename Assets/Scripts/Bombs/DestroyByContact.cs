@@ -16,6 +16,7 @@ public class DestroyByContact : MonoBehaviour {
             GameObject.Find("GameController").GetComponent<GameController>().ResetCombo();
             other.GetComponent<HazzardMover>().currentSpeed = 0.0f;
             other.GetComponent<Animator>().SetBool("destroy", true);
+            other.GetComponent<Xplosion>().Activate();
             lifes--;
             GameObject.Find("GameController").GetComponent<GameController>().DestroyAllies(lifes);
         }

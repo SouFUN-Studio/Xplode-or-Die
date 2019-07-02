@@ -16,6 +16,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using CodeMonkey.Utils;
 using TMPro;
+using System.Text.RegularExpressions;
 
 public class HighscoreTable : MonoBehaviour {
 
@@ -25,6 +26,17 @@ public class HighscoreTable : MonoBehaviour {
 
     private Transform entryPlayerTemplate;
     public ScrollRect scrollRect;
+    public Sprite sp;
+    public Sprite[] sprites;
+    public TMP_InputField TMP;
+
+    public void Awake()
+    {
+        TMP.characterLimit = 15;
+        TMP.text = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetPlayerName();
+
+    }
+
     public void ShowScores()
     {
         
@@ -35,7 +47,7 @@ public class HighscoreTable : MonoBehaviour {
         //ASDASDSADASDASDSADASDASDASDASDASDASD
         entryPlayerTemplate = GameObject.Find("Player Entry Template").transform;
         entryTemplate.gameObject.SetActive(false);
-        Debug.Log("LoadScores...");
+        //Debug.Log("LoadScores...");
         LoadStoredPlayersToHighscores();
         string jsonString = PlayerPrefs.GetString("highscoreTable");
         //Debug.Log(PlayerPrefs.GetString("highscoreTable"));
@@ -45,13 +57,13 @@ public class HighscoreTable : MonoBehaviour {
         if (highscores == null)
         {
             // There's no stored table, initialize
-            Debug.Log("Initializing table with default values...");
-            AddHighscoreEntry(600);
-            AddHighscoreEntry(500);
-            AddHighscoreEntry(400);
-            AddHighscoreEntry(300);
-            AddHighscoreEntry(200);
-            AddHighscoreEntry(100);
+            //Debug.Log("Initializing table with default values...");
+            AddHighscoreEntry(1, 600, "Guest01", 0);
+            AddHighscoreEntry(2, 500, "Guest02", 5);
+            AddHighscoreEntry(3, 400, "Guest03", 10);
+            AddHighscoreEntry(4, 300, "Guest04", 8);
+            AddHighscoreEntry(5, 200, "Guest05", 2);
+            AddHighscoreEntry(6, 100, "Guest06", 13);
             // Reload
             jsonString = PlayerPrefs.GetString("highscoreTable");
             highscores = JsonUtility.FromJson<Highscores>(jsonString);
@@ -82,8 +94,15 @@ public class HighscoreTable : MonoBehaviour {
 
         HighscoreEntry playerScore = new HighscoreEntry()
         {
-            score = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetScore()
+            id = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetID(),
+            score = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetScore(),
+            player = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetPlayerName()
         };
+
+        if (playerScore.player == "Guest")
+            playerScore.player = playerScore.player +(9999 - GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetID());
+
+
         entryContainer.GetComponent<RectTransform>().sizeDelta = new Vector2 (100, 50 + (50*highscores.highscoreEntryList.Count));
         int count = 0;
         int startInstantiate = highscores.highscoreEntryList.Count;
@@ -95,11 +114,13 @@ public class HighscoreTable : MonoBehaviour {
             }
             else
             {
-                CreateHighscoreEntryTransform(highscores.highscoreEntryList[count], entryContainer, highscoreEntryTransformList, playerScore.score, startInstantiate);
+                CreateHighscoreEntryTransform(highscores.highscoreEntryList[count], entryContainer, highscoreEntryTransformList, playerScore.id, startInstantiate);
                 count++;
             }
         }
-            entryPlayerTemplate.Find("scoreText").GetComponent<TextMeshProUGUI>().SetText(playerScore.score.ToString());
+        entryPlayerTemplate.Find("scoreText").GetComponent<TextMeshProUGUI>().SetText(playerScore.score.ToString());
+        entryPlayerTemplate.Find("nameText").GetComponent<TextMeshProUGUI>().SetText(playerScore.player);
+        //        entryPlayerTemplate.Find("profilePhoto").GetComponent<Image>().sprite = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetProfilePhoto();
         scrollRect.verticalNormalizedPosition = 1.0f;
     }
 
@@ -112,10 +133,9 @@ public class HighscoreTable : MonoBehaviour {
         }
     }
 
-    private void CreateHighscoreEntryTransform(HighscoreEntry highscoreEntry, Transform container, List<Transform> transformList, int playerScore, int startInstansiate) {
+    private void CreateHighscoreEntryTransform(HighscoreEntry highscoreEntry, Transform container, List<Transform> transformList, int playerID, int startInstansiate) {
         float templateHeight = 50f;
         Transform entryTransform = Instantiate(entryTemplate, container);
-        Debug.Log("Container Instanciado");
         entryTransform.tag = "TemplateCopy";
         RectTransform entryRectTransform = entryTransform.GetComponent<RectTransform>();
         entryRectTransform.anchoredPosition = new Vector2(0,((startInstansiate * 50)/2 -25) -templateHeight * transformList.Count);
@@ -135,12 +155,13 @@ public class HighscoreTable : MonoBehaviour {
         entryTransform.Find("posText").GetComponent<TextMeshProUGUI>().SetText(rankString);
 
         int score = highscoreEntry.score;
-
+        string name = highscoreEntry.player;
+        int randomSP = highscoreEntry.profileImg;
         //string score = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetDownload().downloadHandler.text;
 
         entryTransform.Find("scoreText").GetComponent<TextMeshProUGUI>().SetText(score.ToString());
-
-
+        entryTransform.Find("nameText").GetComponent<TextMeshProUGUI>().SetText(name);
+        entryTransform.Find("profilePhoto").GetComponent<Image>().sprite = sprites[randomSP];
         //string name = highscoreEntry.name;
         //entryTransform.Find("nameText").GetComponent<Text>().text = name;
 
@@ -166,16 +187,53 @@ public class HighscoreTable : MonoBehaviour {
 
         transformList.Add(entryTransform);
 
-        if (playerScore == score)
+        if ( playerID == highscoreEntry.id)
         {
             entryPlayerTemplate.Find("posText").GetComponent<TextMeshProUGUI>().SetText(rankString);
+            entryPlayerTemplate.Find("profilePhoto").GetComponent<Image>().sprite = sprites[randomSP];
         }
 
-        }
+    }
 
-    public void AddHighscoreEntry(int score) {
+    public void SetPlayName()
+    {
+        string newName = TMP.text;
+        newName = QuitarEspaciosCadena(newName);
+        if (newName != "")
+        {
+            if (newName == "Guest")
+            {
+                GameObject.Find("DatabaseManager").GetComponent<Retrieval>().UploadMyName(newName
+                    + (9999 - GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetID()));
+                entryPlayerTemplate.Find("nameText").GetComponent<TextMeshProUGUI>().SetText(newName
+                    + (9999 - GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetID()));
+            }
+            else
+            {
+
+                GameObject.Find("DatabaseManager").GetComponent<Retrieval>().UploadMyName(newName);
+                entryPlayerTemplate.Find("nameText").GetComponent<TextMeshProUGUI>().SetText(newName);
+            }
+        }
+        TMP.text = newName;
+    }
+
+    private string QuitarEspaciosCadena(string cadena)
+    {
+        // -----------------------------------------------------------------------
+        // \s -> Coincide con cualquier carácter que sea un espacio en blanco
+        // \S -> Coincide con cualquier carácter que no sea un espacio en blanco.
+        // http://msdn.microsoft.com/es-es/library/20bw873z(v=vs.90)
+        // -----------------------------------------------------------------------
+        Regex espacio = new Regex(@"\s+");
+        cadena = espacio.Replace(cadena, "");
+        return cadena;
+    }
+
+
+    public void AddHighscoreEntry(int id, int score, string name, int spriteImg) {
         // Create HighscoreEntry
-        HighscoreEntry highscoreEntry = new HighscoreEntry { score = score };
+        HighscoreEntry highscoreEntry = new HighscoreEntry {id = id, score = score, player=name, profileImg=spriteImg  };
         
         // Load saved Highscores
         string jsonString = PlayerPrefs.GetString("highscoreTable");
@@ -218,7 +276,7 @@ public class HighscoreTable : MonoBehaviour {
 
     public int GetFirstScore()
     {
-        Debug.Log(PlayerPrefs.GetString("highscoreTable"));
+        //Debug.Log(PlayerPrefs.GetString("highscoreTable"));
         Highscores highscores = JsonUtility.FromJson<Highscores>(PlayerPrefs.GetString("highscoreTable"));
         highscores = SortScoreList(highscores);
 
@@ -226,17 +284,20 @@ public class HighscoreTable : MonoBehaviour {
     }
     public void LoadStoredPlayersToHighscores()
     {
+        int [] i = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetPlayersIDs();
         int[] p = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetPlayersScores();
-
+        string[] n = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetPlayersName();
+        int[] s = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetPlayersImg();
         //Debug.Log(PlayerPrefs.GetString("highscoreTable"));
         if (p != null)
         {
         PlayerPrefs.DeleteKey("highscoreTable"); //DELETE SCORE DATABASE    
         string jsonString = PlayerPrefs.GetString("highscoreTable");
         Highscores highscores = JsonUtility.FromJson<Highscores>(jsonString);
-            foreach (int score in p)
+            for (int count = 0; count < p.Length; count++)
             {
-                AddHighscoreEntry(score);
+                int randomSp = (int)Random.Range(0, 13);
+                AddHighscoreEntry(i[count], p[count], n[count], randomSp);
             }
 
         }
@@ -250,6 +311,9 @@ public class HighscoreTable : MonoBehaviour {
      * */
     [System.Serializable] 
     private class HighscoreEntry {
+        public int id;
+        public int profileImg;
+        public string player;
         public int score;
     }
 

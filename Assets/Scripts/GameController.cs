@@ -14,7 +14,7 @@ public class GameController : MonoBehaviour {
      ************************************/
     [Header("Destroy by Contact Script")]
     // Object that contain the destroy boundary script
-    public DestroyByContact DBC;
+    public GameObject DBC;
 
     [Header("Resize Background Script")]
     // Object that contain the resize collider
@@ -22,8 +22,8 @@ public class GameController : MonoBehaviour {
 
     [Header("Canvas")]
     //GameOver canvas 
-    public Canvas GameOver;
-
+    public GameObject GameOver;
+    public GameObject HUD;
     public Image newRecordImage;
 
     public HighscoreTable highscoreTable;
@@ -32,9 +32,8 @@ public class GameController : MonoBehaviour {
     [Header("Gelatux")]
     public GameObject[] allies;
     [Header("Bombs")]
-    public GameObject hazzard0;
-	public GameObject hazzard1;
-    public GameObject hazzard2;
+    public GameObject[] hazzardArray;
+
     [Header("Spawn Settings")]
     public Vector3 spawnValues;
     public int hazzardCount;
@@ -46,15 +45,21 @@ public class GameController : MonoBehaviour {
     [Header("Current score in playmode")]
     public TextMeshProUGUI textHUD;
 
-    [Header("Gameover text's")]
+    [Header("Gameover")]
     public TextMeshProUGUI gameoverScore;
     public TextMeshProUGUI highscore;
-
     public TextMeshProUGUI gameoverCombo;
-
+    public AudioSource musicSource;
+    public AudioClip gameOverSong;
+    public AudioSource bombFx;
+    public AudioClip bombExplosion;
+    
     [Header("Animation State")]
     public int count;
 
+    [Header("Tutorial")]
+    public bool tutorialStatus;
+    public GameObject tutorial;
     /*************************************
      *                                   *
      *         PRIVATE VARIABLES         *
@@ -63,7 +68,6 @@ public class GameController : MonoBehaviour {
 
     readonly string highScore;
 
-    private GameObject[] hazzardArray = new GameObject[3];
     private GameObject[] enemyArray;
 
     private  int currentScore;
@@ -71,8 +75,10 @@ public class GameController : MonoBehaviour {
     private int currentCombo;
     private int combo;
     private int maxCombo;
-    private readonly int scrsbsttt = 999999999;
     private float speedUp;
+    private Vector2 starMark;
+    private Vector2 endMark;
+    private float musicSpeed;
 
     //   private Coroutine bombsCoroutine;
 
@@ -83,14 +89,15 @@ public class GameController : MonoBehaviour {
      ************************************/
 
     void Start (){
-        hazzardArray[0] = hazzard0;
-        hazzardArray[1] = hazzard1;
-        hazzardArray[2] = hazzard2;
         count = (allies.Length * 30) / allies.Length;
         currentCombo = 0;
         maxCombo = 0;
         speedUp = 0f;
-        //StartCoroutine(GameObject.Find("DatabaseManager").GetComponent<Retrieval>().NewRecord(currentScore, "name"));
+        endMark = GameObject.Find("Destination").GetComponent<Transform>().position;
+        starMark= GameObject.Find("Platform").GetComponent<Transform>().position;
+        musicSpeed = 1f;
+        tutorialStatus = GetComponent<SettingsController>().GetTutorialStatus();
+        SetPrefabsFxEnabled();
     }
 
     /*************************************
@@ -104,59 +111,35 @@ public class GameController : MonoBehaviour {
         comboObject.GetComponentInChildren<TextMesh>().text = combo.ToString();
         currentScore = score;
         currentCombo = combo;
-
+        
         //GAMEOVER 
-        if (DBC.GetLifes() == 0)
+        if (DBC.GetComponent<DestroyByContact>().GetLifes() == 0)
         {
+            GameObject.Find("Platform").GetComponent<PlatformMover>().enabled = false;
+            GameObject.Find("Platform").transform.position = GameObject.Find("Start").transform.position;
+            musicSource.clip = gameOverSong;
+            musicSource.loop = false;
+            musicSource.Play();
+            musicSpeed = 1f;
+            musicSource.outputAudioMixerGroup.audioMixer.SetFloat("Speed", musicSpeed);
             SetSpeedUp(0.0f);
             NewRecord();
+            if(GetComponent<SettingsController>().IsFXEnabled())
+                bombFx.PlayOneShot(bombExplosion, 0.5f);
             //HighscoreTable.AddHighscoreEntry(currentScore);
             GameObject.Find("AdsController").GetComponent<UnityAdsPlacement>().ShowAd();
-            GameOver.enabled = true;
+            GameOver.SetActive(true);
+            GameOver.GetComponent<MenuMover>().SetActive(true);
             StopHazzardSpawn();
+            StopCoroutine(StopBombsC());
             RSTS.ReSizeCollider();
             highscore.SetText(highscoreTable.GetFirstScore().ToString());
             gameoverScore.SetText("" + (currentScore));
             gameoverCombo.SetText(maxCombo.ToString());
             ResetGame();
-            DBC.SetLifes(3);
+            DBC.GetComponent<DestroyByContact>().SetLifes(3);
         }
         count = (allies.Length*30)/allies.Length;
-
-
-        if (Input.GetKeyDown(KeyCode.Escape))
-        {
-
-            if (GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().isActiveAndEnabled)
-                GameObject.Find("Exit Canvas").GetComponent<Canvas>().enabled = true;
-
-            if (GameObject.Find("Highscore Canvas").GetComponent<Canvas>().isActiveAndEnabled)
-            {
-                GameObject.Find("Highscore Canvas").GetComponent<Canvas>().enabled = false;
-                GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().enabled = true;
-            }
-
-            if (GameObject.Find("Help Menu Canvas").GetComponent<Canvas>().isActiveAndEnabled && Input.GetKeyDown(KeyCode.Escape))
-            {
-                GameObject.Find("Help Menu Canvas").GetComponent<Canvas>().enabled = false;
-                GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().enabled = true;
-                //Extra Code to restart the help menu configuration
-                GetComponent<HelpMenu>().ResetHelpMenu();
-            }
-
-            if (GameObject.Find("Credits Canvas").GetComponent<Canvas>().isActiveAndEnabled && Input.GetKeyDown(KeyCode.Escape))
-            {
-                GameObject.Find("Credits Canvas").GetComponent<Canvas>().enabled = false;
-                GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().enabled = true;
-            }
-            if (GameObject.Find("Settings Canvas").GetComponent<Canvas>().isActiveAndEnabled && Input.GetKeyDown(KeyCode.Escape))
-            {
-                GameObject.Find("Settings Canvas").GetComponent<Canvas>().enabled = false;
-                GameObject.Find("Main Menu Canvas").GetComponent<Canvas>().enabled = true;
-            }
-        }
-            
-        
     }
 
     /*************************************
@@ -166,14 +149,20 @@ public class GameController : MonoBehaviour {
      ************************************/
 
     /* Coroutine*/
-    IEnumerator SpawnWaves () {
+    IEnumerator SpawnWaves ()
+    {
 		yield return new WaitForSeconds (startWait);
         
 		while (true) {
 			for (int i = 0; i < hazzardCount; i++) {
 				Vector3 spawnPosition = new Vector3 (Random.Range(-spawnValues.x, spawnValues.x), spawnValues.y, spawnValues.z);
+                float random = Random.Range(0.2f, 2.58f);
+                if (random > 2.45f && random <= 2.5f)
+                    random = 3f;
+                if (random > 2.5 && random < 3f)
+                    random = 4f;
                 
-				Instantiate (hazzardArray[(int)Random.Range(0.0f,2.3f)], spawnPosition, spawnRotation);
+                Instantiate (hazzardArray[(int)random], spawnPosition, spawnRotation);
 				yield return new WaitForSeconds (spawnWait);
 			}
 			yield return new WaitForSeconds (waveWait);
@@ -182,6 +171,8 @@ public class GameController : MonoBehaviour {
                 hazzardArray[a].GetComponent<HazzardMover>().SetNewSpeed(GetSpeedUP());
             }
             speedUp += 0.3f;
+            if(musicSpeed < 1.40f)
+                musicSpeed += 0.01f;
             if(spawnWait > 0.5)
                 spawnWait -= 0.05f;
 		}
@@ -195,6 +186,7 @@ public class GameController : MonoBehaviour {
         enemyArray = GameObject.FindGameObjectsWithTag("Enemy");
         foreach (GameObject bomb in enemyArray)
         {
+            bomb.GetComponent<AudioSource>().enabled = false;
             bomb.GetComponent<HazzardMover>().SetDestroy(true);
         }
     }
@@ -203,7 +195,7 @@ public class GameController : MonoBehaviour {
      
     public void StartHazzardSpawn()
     {
-        //StopCoroutine(bombsCoroutine);
+        
         StartCoroutine("SpawnWaves");
         
     }
@@ -223,6 +215,30 @@ public class GameController : MonoBehaviour {
     {
         return this.speedUp;
     }
+    public void StopBombs()
+    {
+        enemyArray = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (GameObject bomb in enemyArray)
+        {
+            bomb.GetComponent<HazzardMover>().currentSpeed = 0.0f;
+            bomb.transform.Find("Ice").gameObject.SetActive(true);
+        }
+        StartCoroutine(StopBombsC());
+        
+    }
+    IEnumerator StopBombsC()
+    {
+        StopHazzardSpawn();
+        yield return new WaitForSeconds(spawnWait);
+        startWait = 0.5f;
+        enemyArray = GameObject.FindGameObjectsWithTag("Enemy");
+        foreach (GameObject bomb in enemyArray)
+        {
+            bomb.GetComponent<HazzardMover>().Start();
+            bomb.transform.Find("Ice").gameObject.SetActive(false);
+        }
+        StartHazzardSpawn();
+    }
     /*************************************
      *                                   *
      *         ALLIES CONTROLLER         *
@@ -230,8 +246,9 @@ public class GameController : MonoBehaviour {
      ************************************/
     public void SpawnAllies()
     {
+        
         int currentCount = GameObject.FindGameObjectsWithTag("Ally").Length;
-
+        
         if (currentCount == 0)
         {
             foreach (GameObject ally in allies)
@@ -266,6 +283,22 @@ public class GameController : MonoBehaviour {
         }
     }
 
+    public void PauseAudioSource()
+    {
+        GameObject[] currentAllies = GameObject.FindGameObjectsWithTag("Ally");
+        foreach (GameObject ally in currentAllies)
+        {
+            ally.GetComponent<AudioSource>().outputAudioMixerGroup.audioMixer.SetFloat("Speed", 0.0f);
+        }
+    }
+    public void UnpauseAudioSource()
+    {
+        GameObject[] currentAllies = GameObject.FindGameObjectsWithTag("Ally");
+        foreach (GameObject ally in currentAllies)
+        {
+            ally.GetComponent<AudioSource>().outputAudioMixerGroup.audioMixer.SetFloat("Speed", 1.38f);
+        }
+    }
     /*************************************
      *                                   *
      *         SCORE CONTROLLER          *
@@ -285,16 +318,21 @@ public class GameController : MonoBehaviour {
 
     public void NewRecord()
     {
-        Debug.Log("Current score: " + currentScore);
+        //Debug.Log("Current score: " + currentScore);
         int storedScore = GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetScore();
-        Debug.Log("Stores score: " + storedScore);
+        //Debug.Log("Stores score: " + storedScore);
         if (currentScore > storedScore)
         {
-            Debug.Log("New Record ...");
+            //Debug.Log("New Record ...");
             newRecordImage.enabled = true;
-            highscoreTable.AddHighscoreEntry(currentScore);
             GameObject.Find("DatabaseManager").GetComponent<Retrieval>().UploadMyScore(currentScore);
-            Debug.Log("New Score: " + GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetScore());
+            highscoreTable.AddHighscoreEntry(
+                GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetID(),
+                currentScore,
+                GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetPlayerName(),
+                GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetProfilePhoto()
+                );
+            //Debug.Log("New Score: " + GameObject.Find("DatabaseManager").GetComponent<Retrieval>().GetScore());
         }
     }
 
@@ -332,32 +370,71 @@ public class GameController : MonoBehaviour {
      ************************************/
     public void ResetGame()
     {
+        startWait = 3f;
         spawnWait = 1f;
         DestroyBombs();
         ResetScores();
         ResetCombo();
+        StopHazzardSpawn();
+        StopCoroutine(StopBombsC());
         foreach(GameObject b in hazzardArray)
         {
             b.GetComponent<HazzardMover>().SetNewSpeed(0.0f);
         }
-        
-        //Destroy(GameObject.FindGameObjectWithTag("Combo"));
     }
 
     public void StartGame()
     {
-        //InstantiateCombo();
-        SetSpeedUp(0.0f);
-        SpawnAllies();
-        StartHazzardSpawn();
+        tutorialStatus = GetComponent<SettingsController>().GetTutorialStatus();
+        SetPrefabsFxEnabled();
+        if (!tutorialStatus)
+        {
+            tutorial.SetActive(true);
+            HUD.transform.Find("Pause Button").GetComponent<Button>().enabled = false;
+            SpawnAllies();
+        }
+        else
+        {
+            //InstantiateCombo();
+            SetSpeedUp(0.0f);
+            SpawnAllies();
+            StartHazzardSpawn();
+        }
+    }
+    public void SetAlliesFxEnabled()
+    {
+        bool enabled = GetComponent<SettingsController>().IsFXEnabled();
+        GameObject[] currentAllies = GameObject.FindGameObjectsWithTag("Ally");
+        foreach (GameObject ally in currentAllies)
+        {
+            ally.GetComponent<AudioSource>().enabled = enabled;
+        }
     }
 
-    
+    public void SetPrefabsFxEnabled()
+    {
+        bool enabled = GetComponent<SettingsController>().IsFXEnabled();
+        AudioSource[] tutorialBombs = tutorial.GetComponentsInChildren<AudioSource>();
+        foreach (AudioSource bombFx in tutorialBombs)
+        {
+            bombFx.enabled = enabled;
+        }
+        foreach (GameObject enemy in hazzardArray)
+        {
+            enemy.GetComponent<AudioSource>().enabled = enabled;
+        }
+        foreach (GameObject ally in allies)
+        {
+            ally.GetComponent<AudioSource>().enabled = enabled;
+        }
+    }
+
     /*************************************
      *                                   *
      *         APLICATION CONTROLLER     *
      *                                   *
      ************************************/
+
     public void CloseApplication()
     {
         Application.Quit();

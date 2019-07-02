@@ -6,8 +6,11 @@ public class HazzardMover : MonoBehaviour {
     public bool normal;
     public bool invert;
     public bool multiple;
+    public bool time;
+    public bool expansive;
     public int life;
 
+    public bool destroy;
 	// Use this for initialization
 	public float currentSpeed;
     public float newSpeed;
@@ -21,19 +24,18 @@ public class HazzardMover : MonoBehaviour {
     private bool scored;
 
     //Use this to initialize
-    void Start () {
+    public void Start () {
+        tarjetPlatform = GameObject.Find("Platform");
        // Debug.Log("Start bomb" + gameObject.name);
         rb = GetComponent<Rigidbody2D> ();
 		rb.velocity = transform.up * - currentSpeed;
         myAnimator = GetComponent<Animator>();
         myAnimator.SetFloat("distance", 100);
-        startDistance = Vector2.Distance(new Vector2(GetComponent<Transform>().position.x, 
-                                                GetComponent<Transform>().position.y), 
-                                    new Vector2(GetComponent<Transform>().position.x, 
-                                                tarjetPlatform.GetComponent<BoxCollider2D>().offset.y));
+        startDistance = Vector2.Distance(transform.position, 
+                                    tarjetPlatform.transform.localPosition);
         distance = startDistance;
         scored = false;
-        if (normal)
+        if (normal || time || expansive)
         {
             currentSpeed = Mathf.Log(1f + newSpeed, 3f) + 1f;
             life = 1;
@@ -57,10 +59,6 @@ public class HazzardMover : MonoBehaviour {
     {
         rb.velocity = transform.up * -currentSpeed;
         DistanceCalculator();
-        if (!GameObject.Find("GameController").GetComponent<LineHandler>().getOnTouch())
-        {
-        }
-
         if (myAnimator.GetCurrentAnimatorStateInfo(0).IsName("End Animation"))
         {
             Destroy(this.gameObject);
@@ -78,23 +76,23 @@ public class HazzardMover : MonoBehaviour {
         distance = Vector2.Distance(new Vector2(GetComponent<Transform>().position.x,
                                         GetComponent<Transform>().position.y),
                             new Vector2(GetComponent<Transform>().position.x,
-                                        tarjetPlatform.GetComponent<BoxCollider2D>().offset.y));
+                                        tarjetPlatform.GetComponent<Transform>().position.y));
         if ( distance > (startDistance / 3) * 2)
         {
             Debug.DrawLine(GetComponent<Transform>().position, new Vector3(GetComponent<Transform>().position.x,
-                                                                        tarjetPlatform.GetComponent<BoxCollider2D>().offset.y, 0.0f), new Color(0, 255, 0, 255));
+                                                                        tarjetPlatform.GetComponent<Transform>().position.y, 0.0f), new Color(0, 255, 0, 255));
         }
         else
         {
             if (distance > (startDistance / 3))
             {
                 Debug.DrawLine(GetComponent<Transform>().position, new Vector3(GetComponent<Transform>().position.x,
-                                                                        tarjetPlatform.GetComponent<BoxCollider2D>().offset.y, 0.0f), new Color(255, 255, 0, 255));
+                                                                        tarjetPlatform.GetComponent<Transform>().position.y, 0.0f), new Color(255, 255, 0, 255));
             }
             else
             {
                 Debug.DrawLine(GetComponent<Transform>().position, new Vector3(GetComponent<Transform>().position.x,
-                                                                        tarjetPlatform.GetComponent<BoxCollider2D>().offset.y, 0.0f), new Color(255, 0, 0, 255));
+                                                                        tarjetPlatform.GetComponent<Transform>().position.y, 0.0f), new Color(255, 0, 0, 255));
             }
         }
     }
@@ -109,19 +107,40 @@ public class HazzardMover : MonoBehaviour {
         if (collision.tag == "Line")
         {
             life--;
-            if (life == 0)
+            Scored();
+        }
+    }
+
+    public void Scored()
+    {
+        if (life == 0)
+        {
+            scored = true;
+            if (scored)
             {
-                scored = true;
-                if (scored)
+                
+                GameObject.Find("GameController").GetComponent<GameController>().SetComboCount(1);
+                GameObject.FindGameObjectWithTag("Combo").transform.position = this.gameObject.transform.position + new Vector3(0.5f, 0.5f, 0);
+                GameObject.FindGameObjectWithTag("Combo").GetComponent<Animator>().SetTrigger("Restart");
+
+                GameObject.FindGameObjectWithTag("Combo").GetComponent<Animator>().enabled = true;
+            }
+            SetDestroy(true);
+            if (time)
+            {
+                GameObject.Find("GameController").GetComponent<GameController>().StopBombs();
+            }
+            if (expansive)
+            {
+                GameObject[] bombs = GameObject.FindGameObjectsWithTag("Enemy");
+                foreach (GameObject bomb in bombs)
                 {
-                    GameObject.Find("GameController").GetComponent<GameController>().SetScoreCount(100);
-                    GameObject.Find("GameController").GetComponent<GameController>().SetComboCount(1);
-                    GameObject.FindGameObjectWithTag("Combo").transform.position = this.gameObject.transform.position + new Vector3(0.5f,0.5f,0);
-                    GameObject.FindGameObjectWithTag("Combo").GetComponent<Animator>().SetTrigger("Restart");
-                    
-                    GameObject.FindGameObjectWithTag("Combo").GetComponent<Animator>().enabled = true;
+                    if (Vector2.Distance(transform.position, bomb.transform.position) < 2f && Vector2.Distance(transform.position, bomb.transform.position) > 0)
+                    {
+                        bomb.GetComponent<HazzardMover>().SetDestroy(true);
+                        //GameObject.Find("GameController").GetComponent<GameController>().SetScoreCount(100);
+                    }
                 }
-                SetDestroy(true);
             }
         }
     }
@@ -138,6 +157,8 @@ public class HazzardMover : MonoBehaviour {
     //@SET bool destroy
     public void SetDestroy(bool destroy)
     {
+        GameObject.Find("GameController").GetComponent<GameController>().SetScoreCount(100);
+        GetComponent<Xplosion>().Activate();
         myAnimator.SetBool("destroy", destroy);
         GetComponent<BoxCollider2D>().enabled = false;
         currentSpeed = 0.0f;
